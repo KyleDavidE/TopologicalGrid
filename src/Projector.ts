@@ -13,9 +13,17 @@ function reduceAngle(angle: number) {
 function reduceAngleCentered(center: number, angle: number) {
     return reduceAngle(angle - center) + center;
 }
+const FUDGE_THETA = Math.PI / 1000;
+function greaterThanEqualsFavorsTrue(a: number,b: number){// faviors true
+    return a + FUDGE_THETA >= b;
+}
 const DEBUG = false;
 const ANGLE_RANGE = Math.PI / 1000;
 class ProjectionPath {
+    maxTheta: number;
+    minTheta: number;
+    offsetY: number;
+    offsetX: number;
     id: string;
     view: TileView
     x: number
@@ -29,12 +37,14 @@ class ProjectionPath {
     static id(view: TileView, x: number, y: number) {
         return `${view.id},${x},${y}`;
     }
-    init(view: TileView, x: number, y: number, isRoot = false) {
+    init(view: TileView, x: number, y: number, isRoot = false, offsetX: number, offsetY: number) {
         this.view = view;
         this.x = x;
         this.y = y;
         this.angles.length = 0;
         this.centerAngle = Math.atan2(y, x);
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
         if (isRoot) {
 
             //    this.angles.push(
@@ -51,6 +61,31 @@ class ProjectionPath {
                 );
 
             }
+        }else{
+            let minTheta = Infinity;
+            let maxTheta = -Infinity;
+            for(let ox = 0; ox < 2; ox++){
+                for(let oy = 0; oy < 2; oy++){
+                    const theta = reduceAngleCentered(
+                        this.centerAngle,
+                        Math.atan2(y - offsetY + oy, x - offsetX + ox,)
+                        
+                    );
+                    if(theta < minTheta) minTheta = theta;
+                    if(theta > maxTheta) maxTheta = theta;
+                    
+                }   
+            }
+            this.minTheta = minTheta;
+            this.maxTheta = maxTheta;
+            this.angles.push(
+                
+                    minTheta,
+                    minTheta,
+                    maxTheta,
+                    maxTheta
+                
+            )
         }
         this.id = ProjectionPath.id(view, x, y);
         this.isRoot = isRoot;
@@ -77,14 +112,14 @@ class ProjectionPath {
         let startIndex = 0;
 
         for (; startIndex < this.angles.length; startIndex++) {
-            if (this.angles[startIndex] >= from) {
+            if (this.angles[startIndex] + FUDGE_THETA >= from) {
                 break;
             }
         }
 
         let endIndex = startIndex;
         for (; endIndex < this.angles.length; endIndex++) {
-            if (this.angles[endIndex] > to) {
+            if (this.angles[endIndex] > to + FUDGE_THETA) {
                 break;
             }
         }
@@ -148,7 +183,9 @@ export class Projector {
                 root,
                 x,
                 y,
-                true
+                true,
+                offsetX,
+                offsetY
             );
             this.lookup.set(
                 rootPath.id,
@@ -236,7 +273,7 @@ export class Projector {
                         newItem = this.lookup.get(key);
                     } else {
                         newItem = this.projectionPathPool.pop();
-                        newItem.init(nextTile, nextX, nextY);
+                        newItem.init(nextTile, nextX, nextY, false, this.offsetX, this.offsetY);
                         this.lookup.set(key, newItem);
                         this.que.push(newItem);
                     }
@@ -260,7 +297,7 @@ export class Projector {
         for (let i = 0; i < item.angles.length / 2; i++) {
             const fromAng = item.angles[2 * i];
             const toAng = item.angles[2 * i + 1];
-
+            if(fromAng === toAng) continue;
             foldAngleRange(fromAng, toAng);
         }
 

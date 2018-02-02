@@ -10,6 +10,7 @@ function debugColor() {
     return debugColors[(Math.random() * debugColors.length) | 0];
 }
 const DEBUG = false;
+const SUPERDebug = false;
 
 // const DEBUGMAP = {7:true, 3:true};
 export class Renderer {
@@ -37,31 +38,51 @@ export class Renderer {
 
         for (let item of items) {
             // if (DEBUG) console.log(item);
+            
             this.ctx.save();
+            if(SUPERDebug){
+                if( (item.x !== 0 || item.y !== -2)){
+
+                
+                this.ctx.beginPath();
+                this.ctx.rect( (item.x  - offsetX) * TILE_SIZE, (item.y - offsetY) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                this.ctx.clip();
+                }else{
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(1000 * Math.cos(item.minTheta), 1000 * Math.sin(item.minTheta));
+                    this.ctx.lineTo(0,0);
+                    this.ctx.lineTo(1000 * Math.cos(item.maxTheta), 1000 * Math.sin(item.maxTheta))
+                    this.ctx.strokeStyle = 'orange';
+                    this.ctx.stroke();
+                }
+            }
             this.ctx.beginPath();
             const r = Math.sqrt(
                 maxSquareSquare(item.x - offsetX) +
                 maxSquareSquare(item.y - offsetY)
             ) + Math.sqrt(2);
+            if(!item.isRoot){
+                for (let i = 0; i < item.angles.length; i += 2) {
 
-            for (let i = 0; i < item.angles.length; i += 2) {
-                const fromAng = item.angles[i];
-                const toAng = item.angles[i + 1];
-                const sf = Math.abs(1/Math.cos( (fromAng-toAng) / 2));
-                this.ctx.moveTo(0, 0);
-                this.ctx.lineTo(Math.cos(fromAng) * r * TILE_SIZE * sf, Math.sin(fromAng) * r * TILE_SIZE * sf);
+                    const fromAng = item.angles[i];
+                    const toAng = item.angles[i + 1];
+                    if(fromAng === toAng) continue;
+                    const sf = Math.abs(1/Math.cos( (fromAng-toAng) / 2));
+                    this.ctx.moveTo(0, 0);
+                    this.ctx.lineTo(Math.cos(fromAng) * r * TILE_SIZE * sf, Math.sin(fromAng) * r * TILE_SIZE * sf);
 
-                // this.ctx.arc(0, 0, r * TILE_SIZE, fromAng, toAng);
-                this.ctx.lineTo(Math.cos(toAng) * r * TILE_SIZE * sf, Math.sin(toAng) * r * TILE_SIZE * sf);
-                
-                this.ctx.lineTo(0, 0);
+                    // this.ctx.arc(0, 0, r * TILE_SIZE, fromAng, toAng);
+                    this.ctx.lineTo(Math.cos(toAng) * r * TILE_SIZE * sf, Math.sin(toAng) * r * TILE_SIZE * sf);
+                    
+                    this.ctx.lineTo(0, 0);
+                }
+                if (DEBUG) {
+                    this.ctx.lineWidth = 1;
+                    this.ctx.strokeStyle = "pink";
+                    this.ctx.stroke();
+                }
+                if(item.angles.length > 2) this.ctx.clip();
             }
-            if (DEBUG) {
-                this.ctx.lineWidth = 1;
-                this.ctx.strokeStyle = "pink";
-                this.ctx.stroke();
-            }
-            this.ctx.clip();
             this.ctx.translate(item.x * TILE_SIZE, item.y * TILE_SIZE);
             this.ctx.translate(-offsetX * TILE_SIZE, -offsetY * TILE_SIZE);
 
@@ -72,9 +93,18 @@ export class Renderer {
             // this.ctx.beginPath();
             // this.ctx.rect(0, 0, 1, 1);
             // this.ctx.clip();
+            
             item.view.tile.render(this.ctx);
-
-
+            
+            if(DEBUG){
+                this.ctx.fillStyle = "grey";
+                
+                this.ctx.fillText(
+                    `${item.angles.map(e=> Math.round(e*10) ).join('\n')}`,
+                    10,
+                    10
+                );
+            }
 
 
 
