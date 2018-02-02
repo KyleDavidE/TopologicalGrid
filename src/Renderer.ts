@@ -42,16 +42,18 @@ export class Renderer {
             const r = Math.sqrt(
                 maxSquareSquare(item.x - offsetX) +
                 maxSquareSquare(item.y - offsetY)
-            );
+            ) + Math.sqrt(2);
 
             for (let i = 0; i < item.angles.length; i += 2) {
                 const fromAng = item.angles[i];
                 const toAng = item.angles[i + 1];
-
+                const sf = Math.abs(1/Math.cos( (fromAng-toAng) / 2));
                 this.ctx.moveTo(0, 0);
-                this.ctx.lineTo(Math.cos(fromAng) * r * TILE_SIZE, Math.sin(fromAng) * r * TILE_SIZE);
+                this.ctx.lineTo(Math.cos(fromAng) * r * TILE_SIZE * sf, Math.sin(fromAng) * r * TILE_SIZE * sf);
 
-                this.ctx.arc(0, 0, r * TILE_SIZE, fromAng, toAng);
+                // this.ctx.arc(0, 0, r * TILE_SIZE, fromAng, toAng);
+                this.ctx.lineTo(Math.cos(toAng) * r * TILE_SIZE * sf, Math.sin(toAng) * r * TILE_SIZE * sf);
+                
                 this.ctx.lineTo(0, 0);
             }
             if (DEBUG) {
