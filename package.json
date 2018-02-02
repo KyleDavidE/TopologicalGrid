@@ -1,0 +1,20 @@
+{
+  "name": "topoGrid",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-loader": "^3.1.1",
+    "typescript": "^2.6.1",
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.4"
+  },
+  "scripts": {
+    "start:dev": "webpack-dev-server"
+  },
+  "dependencies": {
+    "lru_map": "^0.3.3",
+    "memoizee": "^0.4.11",
+    "sylvester": "^0.0.21"
+  }
+}
