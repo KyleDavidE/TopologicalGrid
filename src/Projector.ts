@@ -149,17 +149,21 @@ class ProjectionPath {
 const EDGE_GLITCH_REDUCTION_DIST = 1 / 100000;
 
 export class Projector {
+    renderRadiusX: number;
+    renderRadiusY: number;
     offsetY: number;
     offsetX: number;
     lookup: Map<string, ProjectionPath>;
     que: ProjectionPath[];
     projectionPathPool = new LinearObjectPool<ProjectionPath>(() => new ProjectionPath());
 
-    project(root: TileView, offsetX: number, offsetY: number): IterableIterator<ProjectionPath> {
+    project(root: TileView, offsetX: number, offsetY: number, renderRadiusX: number, renderRadiusY: number): IterableIterator<ProjectionPath> {
         this.que = [];
         this.lookup = new Map();
         this.offsetX = offsetX;
         this.offsetY = offsetY;
+        this.renderRadiusX = renderRadiusX;
+        this.renderRadiusY = renderRadiusY;
         const addRoot = (root: TileView, x: number, y: number) => {
             if (!root) return;
 
@@ -191,6 +195,7 @@ export class Projector {
                 rootPath.id,
                 rootPath
             );
+            
             this.que.push(rootPath);
 
         }
@@ -219,6 +224,12 @@ export class Projector {
      */
 
     considerSide(item: ProjectionPath, axis: boolean, offsetZ: number, nextTile: TileView, nextX: number, nextY: number) {
+        if(
+            nextX - this.offsetX > this.renderRadiusX ||
+            nextX - this.offsetX + 1 < -this.renderRadiusX ||
+            nextY - this.offsetY > this.renderRadiusY ||
+            nextY - this.offsetY + 1 < -this.renderRadiusY
+        ) return;
         if (!nextTile) return;
         if (DEBUG) console.log("consider side", axis, offsetZ, nextTile, nextX, nextY, item.id);
         const lineZ = axis ? item.x + offsetZ - this.offsetX : item.y + offsetZ - this.offsetY;

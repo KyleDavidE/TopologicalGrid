@@ -24,7 +24,7 @@ export class Renderer {
     }
 
     render(root: TileView, offsetX: number, offsetY: number) {
-        const items = this.projector.project(root, offsetX, offsetY);
+        const items = this.projector.project(root, offsetX, offsetY, this.can.width / TILE_SIZE / 2, this.can.height / TILE_SIZE / 2);
         this.ctx.fillStyle = 'rgba(0,0,0,1)';
         this.ctx.fillRect(0,0,this.can.width,this.can.height);
         this.ctx.save();
