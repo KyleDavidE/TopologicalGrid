@@ -13,7 +13,7 @@ function reduceAngle(angle: number) {
 function reduceAngleCentered(center: number, angle: number) {
     return reduceAngle(angle - center) + center;
 }
-const FUDGE_THETA = Math.PI / 256;
+const FUDGE_THETA = Math.PI / 1000;
 function greaterThanEqualsFavorsTrue(a: number,b: number){// faviors true
     return a + FUDGE_THETA >= b;
 }
