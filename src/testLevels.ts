@@ -172,13 +172,51 @@ export function fastLane(){
     }
     return grid.get(0,3);
 }
+
+
+
+
+
+export function ballPort() {
+    const grid1 = new TileGrid(9, 9, [
+        solidColorTiles("red")
+    ] );
+    const grid2 = new TileGrid(9, 9, [
+        solidColorTiles("blue")
+    ]);
+    
+    
+    const center1 = grid1.get(4,4);
+    const center2 = grid2.get(4,4);
+    
+    for(let i = 0; i < 4; i++){
+        const reverse = (i + 2) % 4;
+        const bridge = new ColorTile("pink");
+        center1.getReference(i).to.link(
+            reverse,
+            bridge
+        );
+        center2.getReference(reverse).to.link(
+            i,
+            bridge
+        );
+    }
+
+
+
+    return grid1.get(4,7);
+}
+
+
+
 export function hubRoom() {
     const worlds = [
         portSpace(),
         shortWay(),
         threeTurns(),
         bridge(),
-        fastLane()
+        fastLane(),
+        ballPort()
     ];
 
     const root = [new ColorTile('red'), new ColorTile('pink')];
