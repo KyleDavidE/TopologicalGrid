@@ -13,7 +13,7 @@ function reduceAngle(angle: number) {
 function reduceAngleCentered(center: number, angle: number) {
     return reduceAngle(angle - center) + center;
 }
-const FUDGE_THETA = Math.PI / 1000;
+const FUDGE_THETA = Math.PI / 256;
 function greaterThanEqualsFavorsTrue(a: number,b: number){// faviors true
     return a + FUDGE_THETA >= b;
 }
@@ -112,14 +112,18 @@ class ProjectionPath {
         let startIndex = 0;
 
         for (; startIndex < this.angles.length; startIndex++) {
-            if (this.angles[startIndex] + FUDGE_THETA >= from) {
+            if (startIndex % 2 === 1 ?
+                this.angles[startIndex] + FUDGE_THETA >= from
+                : this.angles[startIndex] >= from + FUDGE_THETA ) {
                 break;
             }
         }
 
         let endIndex = startIndex;
         for (; endIndex < this.angles.length; endIndex++) {
-            if (this.angles[endIndex] > to + FUDGE_THETA) {
+            if (endIndex % 2 === 1 ?
+                this.angles[endIndex] + FUDGE_THETA >  to 
+            : this.angles[endIndex] >  FUDGE_THETA + to) {
                 break;
             }
         }
@@ -127,10 +131,12 @@ class ProjectionPath {
         const endIsOutside = endIndex % 2 == 0;
 
         if (startIsOutside && endIsOutside) {
+            
             this.angles.splice(startIndex, endIndex - startIndex, from, to);
         } else if (startIsOutside) {
             this.angles.splice(startIndex, endIndex - startIndex, from);
         } else if (endIsOutside) {
+            
             this.angles.splice(startIndex, endIndex - startIndex, to);
         } else {
             this.angles.splice(startIndex, endIndex - startIndex);
