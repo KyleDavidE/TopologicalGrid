@@ -93,9 +93,7 @@ export class Renderer {
             // this.ctx.beginPath();
             // this.ctx.rect(0, 0, 1, 1);
             // this.ctx.clip();
-            
             item.view.tile.render(this.ctx);
-            
             if(DEBUG){
                 this.ctx.fillStyle = "grey";
                 

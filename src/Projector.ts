@@ -13,12 +13,12 @@ function reduceAngle(angle: number) {
 function reduceAngleCentered(center: number, angle: number) {
     return reduceAngle(angle - center) + center;
 }
-const FUDGE_THETA = Math.PI / 1000;
+const FUDGE_THETA = Math.PI / 100000;
 function greaterThanEqualsFavorsTrue(a: number,b: number){// faviors true
     return a + FUDGE_THETA >= b;
 }
 const DEBUG = false;
-const ANGLE_RANGE = Math.PI / 1000;
+const ANGLE_RANGE = Math.PI / 100000;
 class ProjectionPath {
     maxTheta: number;
     minTheta: number;
