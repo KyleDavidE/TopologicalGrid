@@ -217,7 +217,7 @@ export class Projector {
     }
 
     considerItem(item: ProjectionPath) {
-        if (Math.sqrt(item.x ** 2 + item.y ** 2) > 10) return;
+        if (Math.sqrt(item.x ** 2 + item.y ** 2) > 100) return;
         if (item.x >= 0 || item.isRoot) this.considerSide(item, true, 1, item.view.getNeighbor(0), item.x + 1, item.y);
         if (item.y >= 0 || item.isRoot) this.considerSide(item, false, 1, item.view.getNeighbor(1), item.x, item.y + 1);
         if (item.x < 1 || item.isRoot) this.considerSide(item, true, 0, item.view.getNeighbor(2), item.x - 1, item.y);

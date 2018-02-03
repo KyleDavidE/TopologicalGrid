@@ -19,6 +19,15 @@ function dynamicColor(w: number, h: number, base: number = 255): TileFilter {
     }
 }
 
+
+function rain(sf: number, offset: number = 0): TileFilter {
+    return (next) => (x, y) => {
+        return new ColorTile(`hsl(${(( (x + offset) / sf) * 360) | 0},50%,50%)`);
+
+    }
+}
+
+
 function checkers( ...colors: string[]): TileFilter {
     return (next) => (x, y) => {
         return new ColorTile(
@@ -156,7 +165,7 @@ export function bridge(){
 }
 
 export function fastLane(){
-    const S = 7;
+    const S = 27;
     const grid = new TileGrid(S,4, [
         dynamicColor(S,4)
     ]);
@@ -174,6 +183,32 @@ export function fastLane(){
 }
 
 
+export function fastLane2(){
+    const shortLength = 10;
+    const zoomLevel = 5;
+    
+    const longGrid = new TileGrid(shortLength*zoomLevel,2, [
+        rain(shortLength*zoomLevel/3)
+    ]);
+    for(let o = 0; o < zoomLevel; o++){
+        const shortGrid = new TileGrid(shortLength,2, [
+            rain(shortLength/3, o/zoomLevel)
+        ]);
+
+        
+        for(let i = 0; i < shortLength; i++){
+            const targ = longGrid.get(i * zoomLevel + o, 0);
+            shortGrid.get(i, 1).link(
+                Side.bottom,
+                targ
+            )
+        }
+
+    }
+    return longGrid.get(0,1);
+}
+
+
 
 
 
@@ -188,10 +223,10 @@ export function ballPort() {
     
     const center1 = grid1.get(4,4);
     const center2 = grid2.get(4,4);
-    
+    let bridge;
     for(let i = 0; i < 4; i++){
         const reverse = (i + 2) % 4;
-        const bridge = new ColorTile("pink");
+        if(i % 2 === 0) bridge = new ColorTile("pink");
         center1.getReference(i).to.link(
             reverse,
             bridge
@@ -216,7 +251,8 @@ export function hubRoom() {
         threeTurns(),
         bridge(),
         fastLane(),
-        ballPort()
+        ballPort(),
+        fastLane2()
     ];
 
     const root = [new ColorTile('red'), new ColorTile('pink')];
