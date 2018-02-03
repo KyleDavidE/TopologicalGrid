@@ -61,4 +61,7 @@ export class Tile{
     stepOn(t: number){
         
     }
+    interact(t: any): any {
+        
+    }
 }

@@ -59,4 +59,8 @@ export class TileView{
     stepOn(t: number){
         this.tile.stepOn(t);
     }
+    interact(t: number){
+        this.tile.interact(t);
+
+    }
 }

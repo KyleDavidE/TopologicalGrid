@@ -3,6 +3,7 @@ import { ColorTile } from "./ColorTile";
 import { Side } from "./Side";
 import { strictCompose } from "./compose";
 import { Tile } from "./Tile";
+import { TickTackToeTile } from "./tickTackToe/TickTackToeTile";
 
 function colorTile(xc: number, yc: number, color: string): TileFilter {
     return (next) => (x, y) => {
@@ -45,6 +46,12 @@ function cardinal(xc: number, yc: number) {
         colorTile(xc - 1, yc, 'blue'),
         colorTile(xc, yc - 1, 'cyan')
     ])
+}
+
+function tickTackToeLayer(n: number = 3): TileFilter {
+    return (next) => (x, y) => {
+        return new TickTackToeTile(n)
+    }
 }
 
 function fullColor(color: string): TileFilter {
@@ -243,16 +250,23 @@ export function ballPort() {
     return grid1.get(4,7);
 }
 
-export function branches(n = 6) {
+export function branches(n = 7) {
     if(n === 0){
         return new ColorTile("red");
     }
-
-    const out = new ColorTile(`hsl(${Math.random() * 360},50%,50%)`);
+    const color = `hsl(${Math.random() * 360},50%,50%)`;
+    const out = new ColorTile(color);
 
     function addSide(side: Side){
+        const bridge = new ColorTile(color);
         out.link(
             side,
+            bridge,
+            Side.bottom
+        );
+
+        bridge.link(
+            Side.top,
             branches(n - 1),
             Side.bottom
         )
@@ -271,6 +285,201 @@ export function branches(n = 6) {
 }
 
 
+
+export function branches2() {
+    const S = 4;
+    function inner(n = 7){
+        const color = `hsl(${Math.random() * 360},50%,50%)`;
+        
+        if(n === 0){
+            return new TileGrid(S,S,[
+                solidColorTiles(color)
+            ]);
+        }
+        const out = new TileGrid(S,S,[
+            solidColorTiles(color)
+        ]);
+
+        const north = inner(n - 1);
+        const east = inner(n - 1);
+        const west = inner(n - 1);
+
+        for(let i = 0; i < S; i++){
+            out.get(i,0).link(
+                Side.top,
+                north.get(i,S-1)
+            );
+            out.get(0,S-1-i).link(
+                Side.left,
+                east.get(i,S-1),
+                Side.bottom
+            );
+            out.get(S-1,i).link(
+                Side.right,
+                west.get(i,S-1),
+                Side.bottom
+            );
+        }
+
+        
+
+
+        return out;
+    }
+    
+    return inner().get( Math.floor(S/2), S - 1);
+
+}
+
+
+export function mirror(){
+    const grid = new TileGrid(5,5,[
+        dynamicColor(5,5)
+    ]);
+
+    for(let i = 1; i < 4; i++){
+        grid.get(2,i).link(
+            Side.right,
+            grid.get(2,i),
+            Side.right,
+            {
+                reflect: true
+            }
+        )
+    }
+
+    
+
+    return grid.get(0,4);
+}
+
+export function tickTackToeBasic(){
+    const grid = new TileGrid(3,3, [
+        tickTackToeLayer()
+    ]);
+
+    return grid.get(0,2);
+}
+
+
+export function tickTackToeDonut(){
+    const grid = new TileGrid(3,3, [
+        tickTackToeLayer()
+    ]);
+
+    const bridge = new ColorTile("white");
+    
+
+    for(let i = 0; i < 3; i++){
+        grid.get(0,i).link(
+            Side.left,
+            grid.get(2,i)
+        );
+        grid.get(i,0).link(
+            Side.top,
+            grid.get(i,2)
+        );
+    }
+
+
+    bridge.link(
+        Side.top,
+        grid.get(0,2),
+        Side.bottom,
+        {
+            addReverse:false
+        }
+    );
+
+    return bridge;
+}
+
+export function tickTackToeKlign(){
+    const grid = new TileGrid(3,3, [
+        tickTackToeLayer(4)
+    ]);
+
+    const bridge = new ColorTile("white");
+    
+
+    for(let i = 0; i < 3; i++){
+        grid.get(0,i).link(
+            Side.left,
+            grid.get(2,i),
+            Side.right,
+            {reflect:false}
+        );
+        grid.get(i,0).link(
+            Side.top,
+            grid.get(2-i,2),
+            Side.bottom,
+            {reflect:true}
+        );
+    }
+
+
+    bridge.link(
+        Side.top,
+        grid.get(0,2),
+        Side.bottom,
+        {
+            addReverse:false
+        }
+    );
+
+    return bridge;
+}
+
+
+
+export function tickTackToeMirror(){
+    const grid = new TileGrid(3,3, [
+        tickTackToeLayer(5)
+    ]);
+
+    const bridge = new ColorTile("white");
+    
+
+    for(let i = 0; i < 3; i++){
+        grid.get(0,i).link(
+            Side.left,
+            grid.get(0,i),
+            Side.left,
+            {reflect:true, addReverse: false}
+        );
+        grid.get(2,i).link(
+            Side.right,
+            grid.get(2,i),
+            Side.right,
+            {reflect:true, addReverse: false}
+        );
+        grid.get(i,2).link(
+            Side.bottom,
+            grid.get(i,2),
+            Side.bottom,
+            {reflect:true, addReverse: false}
+        );
+        grid.get(i,0).link(
+            Side.top,
+            grid.get(i,0),
+            Side.top,
+            {reflect:true, addReverse: false}
+        );
+    }
+
+
+    bridge.link(
+        Side.top,
+        grid.get(0,2),
+        Side.bottom,
+        {
+            addReverse:false
+        }
+    );
+
+    return bridge;
+}
+
 export function hubRoom() {
     const worlds = [
         portSpace(),
@@ -280,7 +489,13 @@ export function hubRoom() {
         fastLane(),
         ballPort(),
         fastLane2(),
-        branches()
+        branches(),
+        mirror(),
+        tickTackToeBasic(),
+        tickTackToeDonut(),
+        tickTackToeKlign(),
+        tickTackToeMirror(),
+        branches2()
     ];
 
     const root = [new ColorTile('red'), new ColorTile('pink')];

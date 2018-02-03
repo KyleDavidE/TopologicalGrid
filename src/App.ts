@@ -28,7 +28,8 @@ export class App {
         a:false,
         s:false,
         d:false
-    }
+    };
+    interactLock = false
     constructor() {
         this.can = document.getElementById("can") as HTMLCanvasElement;
         this.renderer = new Renderer(this.can);
@@ -71,10 +72,21 @@ export class App {
         if (e.key in this.monitorKeys){
             this.monitorKeys[e.key] = true;
         }
+        if(e.key === "e" && !this.interactLock){
+            this.interactLock = true;
+            this.view.interact(performance.now());
+
+        }
     }
     keyUp(e: KeyboardEvent) {
         if (e.key in this.monitorKeys) {
             this.monitorKeys[e.key] = false;
+        }
+        if(e.key === "e"){
+            this.interactLock = false;
+        }
+        if(e.key === "h"){
+            this.view = level.getView(0);
         }
     }
     tryMove(dt: number){

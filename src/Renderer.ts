@@ -62,7 +62,7 @@ export class Renderer {
                 maxSquareSquare(item.y - offsetY)
             ) + Math.sqrt(2);
             if(!item.isRoot){
-                for (let i = 0; i < item.angles.length; i += 2) {
+                for (let i = 0; i < item.anglesLength; i += 2) {
 
                     const fromAng = item.angles[i];
                     const toAng = item.angles[i + 1];
@@ -81,7 +81,7 @@ export class Renderer {
                     this.ctx.strokeStyle = "pink";
                     this.ctx.stroke();
                 }
-                if(item.angles.length > 2) this.ctx.clip();
+                if(item.anglesLength !== 2) this.ctx.clip();
             }
             this.ctx.translate(item.x * TILE_SIZE, item.y * TILE_SIZE);
             this.ctx.translate(-offsetX * TILE_SIZE, -offsetY * TILE_SIZE);
@@ -127,7 +127,7 @@ export class Renderer {
         // for (let y = (this.can.height / 2 - offsetY * TILE_SIZE) % TILE_SIZE - TILE_SIZE; y < this.can.height; y += TILE_SIZE) {
         //     this.ctx.moveTo(0, y);
         //     this.ctx.lineTo(this.can.width, y);
-        // }
+        // }    
         // this.ctx.strokeStyle = 'rgba(255,255,255,1)';
         // this.ctx.lineWidth = 1;
         // this.ctx.stroke();

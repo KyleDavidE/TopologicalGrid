@@ -21,6 +21,7 @@ export class LinearObjectPool<T extends Poolable> implements Poolable{
             this.items.push(
                 this.makeT()
             );
+            (window as {[x:string]:any}).usedSize = this.items.length;
         }
         return this.items[this.usedIndex++];
     }

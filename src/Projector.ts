@@ -29,8 +29,10 @@ class ProjectionPath {
     x: number
     y: number
     centerAngle: number
-    angles: number[] = []
+    // angles: number[] = []
     isRoot: boolean;
+    angles = new Float64Array(32)
+    anglesLength = 0
     constructor() {
 
     }
@@ -41,7 +43,7 @@ class ProjectionPath {
         this.view = view;
         this.x = x;
         this.y = y;
-        this.angles.length = 0;
+        this.anglesLength = 0;
         this.centerAngle = Math.atan2(y, x);
         this.offsetX = offsetX;
         this.offsetY = offsetY;
@@ -52,11 +54,11 @@ class ProjectionPath {
             //        Math.PI / 2
             //    );
             for (let i = 0; i < 8; i++) {
-                this.angles.push(
+                this.angles[this.anglesLength++] = (
                     Math.PI / 4 * (i + .5)
                 );
 
-                this.angles.push(
+                this.angles[this.anglesLength++] = (
                     Math.PI / 4 * (i + 1.5)
                 );
 
@@ -78,14 +80,11 @@ class ProjectionPath {
             }
             this.minTheta = minTheta;
             this.maxTheta = maxTheta;
-            this.angles.push(
+            this.angles[this.anglesLength++] = minTheta;
+            this.angles[this.anglesLength++] = minTheta;
+            this.angles[this.anglesLength++] = maxTheta;
+            this.angles[this.anglesLength++] = maxTheta;
                 
-                    minTheta,
-                    minTheta,
-                    maxTheta,
-                    maxTheta
-                
-            )
         }
         this.id = ProjectionPath.id(view, x, y);
         this.isRoot = isRoot;
@@ -129,18 +128,28 @@ class ProjectionPath {
         }
         const startIsOutside = startIndex % 2 == 0;
         const endIsOutside = endIndex % 2 == 0;
-
-        if (startIsOutside && endIsOutside) {
+        const lengthChange = startIndex - endIndex + (startIsOutside?1:0) + (endIsOutside?1:0);
+        this.angles.copyWithin(
+            endIndex + lengthChange,
+            endIndex,
+            this.anglesLength
+        );
+        this.anglesLength += lengthChange;
+        
+        if(startIsOutside) this.angles[startIndex++] = from;
+        if(endIsOutside) this.angles[startIndex++] = to;
+        
+        // if (startIsOutside && endIsOutside) {
             
-            this.angles.splice(startIndex, endIndex - startIndex, from, to);
-        } else if (startIsOutside) {
-            this.angles.splice(startIndex, endIndex - startIndex, from);
-        } else if (endIsOutside) {
+        //     this.angles.splice(startIndex, endIndex - startIndex, from, to);
+        // } else if (startIsOutside) {
+        //     this.angles.splice(startIndex, endIndex - startIndex, from);
+        // } else if (endIsOutside) {
             
-            this.angles.splice(startIndex, endIndex - startIndex, to);
-        } else {
-            this.angles.splice(startIndex, endIndex - startIndex);
-        }
+        //     this.angles.splice(startIndex, endIndex - startIndex, to);
+        // } else {
+        //     this.angles.splice(startIndex, endIndex - startIndex);
+        // }
 
         return;
     }
@@ -159,13 +168,14 @@ export class Projector {
     renderRadiusY: number;
     offsetY: number;
     offsetX: number;
-    lookup: Map<string, ProjectionPath>;
+    lookup: Map<string, ProjectionPath> = new Map();
     que: ProjectionPath[];
     projectionPathPool = new LinearObjectPool<ProjectionPath>(() => new ProjectionPath());
 
     project(root: TileView, offsetX: number, offsetY: number, renderRadiusX: number, renderRadiusY: number): IterableIterator<ProjectionPath> {
+        this.projectionPathPool.done();
         this.que = [];
-        this.lookup = new Map();
+        this.lookup.clear();
         this.offsetX = offsetX;
         this.offsetY = offsetY;
         this.renderRadiusX = renderRadiusX;
@@ -203,7 +213,7 @@ export class Projector {
             );
             
             this.que.push(rootPath);
-
+            
         }
         addRoot(root, 0, 0);
 
@@ -211,6 +221,10 @@ export class Projector {
         while (this.que.length > 0) {
             const item = this.que.shift();
             this.considerItem(item);
+            if(this.que.length > 1000){
+                console.warn('oversize que');
+                break;
+            }
         }
 
         return this.lookup.values();
