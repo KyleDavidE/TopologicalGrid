@@ -23,7 +23,7 @@ export class Renderer {
         this.ctx = can.getContext('2d');
     }
 
-    render(root: TileView, offsetX: number, offsetY: number) {
+    render(root: TileView, offsetX: number, offsetY: number, t:number) {
         const items = this.projector.project(root, offsetX, offsetY, this.can.width / TILE_SIZE / 2, this.can.height / TILE_SIZE / 2);
         this.ctx.fillStyle = 'rgba(0,0,0,1)';
         this.ctx.fillRect(0,0,this.can.width,this.can.height);
@@ -93,7 +93,7 @@ export class Renderer {
             // this.ctx.beginPath();
             // this.ctx.rect(0, 0, 1, 1);
             // this.ctx.clip();
-            item.view.tile.render(this.ctx);
+            item.view.tile.render(this.ctx, t);
             if(DEBUG){
                 this.ctx.fillStyle = "grey";
                 

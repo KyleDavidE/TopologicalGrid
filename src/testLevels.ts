@@ -2,6 +2,7 @@ import { TileGrid, TileFilter} from "./TileGrid";
 import { ColorTile } from "./ColorTile";
 import { Side } from "./Side";
 import { strictCompose } from "./compose";
+import { Tile } from "./Tile";
 
 function colorTile(xc: number, yc: number, color: string): TileFilter {
     return (next) => (x, y) => {
@@ -242,6 +243,32 @@ export function ballPort() {
     return grid1.get(4,7);
 }
 
+export function branches(n = 6) {
+    if(n === 0){
+        return new ColorTile("red");
+    }
+
+    const out = new ColorTile(`hsl(${Math.random() * 360},50%,50%)`);
+
+    function addSide(side: Side){
+        out.link(
+            side,
+            branches(n - 1),
+            Side.bottom
+        )
+    }
+
+    addSide(Side.top);
+    addSide(Side.bottom);
+    addSide(Side.left);
+    addSide(Side.right);
+
+    
+
+
+    return out;
+
+}
 
 
 export function hubRoom() {
@@ -252,7 +279,8 @@ export function hubRoom() {
         bridge(),
         fastLane(),
         ballPort(),
-        fastLane2()
+        fastLane2(),
+        branches()
     ];
 
     const root = [new ColorTile('red'), new ColorTile('pink')];

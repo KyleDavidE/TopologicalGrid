@@ -5,6 +5,7 @@ import { DirMtx } from './DirMtx';
 
 let nextId = 0;
 export class Tile{
+    loadTimer: number;
     links: SideReference[] = [null, null, null, null];
     id = nextId++;
 
@@ -49,13 +50,15 @@ export class Tile{
         return TileView.lookup(this, mtx);
     }
 
-    render(ctx: CanvasRenderingContext2D){
-        ctx.fillStyle = ["red","green","blue","cyan","orange"][this.id % 5];
-        ctx.fillRect(0,0,1,1);
+    render(ctx: CanvasRenderingContext2D, t: number){
+        this.loadTimer = t;
     }
     isolate(){
         for(let i = 0; i < 4; i++){
             this.unlink(i);
         }
+    }
+    stepOn(t: number){
+        
     }
 }

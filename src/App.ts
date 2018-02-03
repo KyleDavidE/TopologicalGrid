@@ -52,12 +52,14 @@ export class App {
             this.can.width = innerWidth;
             this.can.height = innerHeight;
         }
+        this.view.stepOn(t);
         
         this.tryMove(dt);
         this.renderer.render(
             this.view,
             this.posn.x,
-            this.posn.y
+            this.posn.y,
+            t
         );
 
         requestAnimationFrame(

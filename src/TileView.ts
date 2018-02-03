@@ -56,5 +56,7 @@ export class TileView{
 
         return null;
     }
-    
+    stepOn(t: number){
+        this.tile.stepOn(t);
+    }
 }
