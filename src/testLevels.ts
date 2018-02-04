@@ -343,7 +343,8 @@ export function mirror(){
             grid.get(2,i),
             Side.right,
             {
-                reflect: true
+                reflect: true,
+                glassLevel: 1
             }
         )
     }
@@ -566,11 +567,19 @@ export function makeHubRoom(worlds: (Tile|Tile[][]|false)[], color = 'gold') {
             );
             if(worldRoot !== false) hubBridge.link(
                 Side.top,
-                worldRoot instanceof Array ? worldRoot[1][0] : worldRoot
+                worldRoot instanceof Array ? worldRoot[1][0] : worldRoot,
+                Side.bottom,
+                {
+                    glassLevel:1
+                }
             );
             if(worldRoot instanceof Array) leftBridge.link(
                 Side.top,
-                worldRoot[0][0]
+                worldRoot[0][0],
+                Side.bottom,
+                {
+                    glassLevel: 1
+                }
             );
             hubTile.link(
                 Side.top,

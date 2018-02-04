@@ -56,6 +56,27 @@ export class TileView{
 
         return null;
     }
+    getReference(i: Side){
+        const edge = this.tile.getReference(
+            dirMtxApply(
+                dirMtxInverse(this.orientation),
+                i
+            )
+            );
+        
+        if(edge){    
+            return edge;
+        }
+
+        return null;
+    }
+    getGlassLevel(i: Side){
+        const ref = this.getReference(i);
+        if(ref){
+            return ref.glassLevel;
+        }
+        return 0;
+    }
     stepOn(t: number){
         this.tile.stepOn(t);
     }
