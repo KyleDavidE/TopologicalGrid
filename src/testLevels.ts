@@ -394,6 +394,41 @@ export function tickTackToeDonut(){
     return bridge;
 }
 
+
+
+
+export function tickTackToeDonutOffset(){
+    const grid = new TileGrid(3,3, [
+        tickTackToeLayer(4)
+    ]);
+
+    const bridge = new ColorTile("white");
+    
+
+    for(let i = 0; i < 3; i++){
+        grid.get(0,i).link(
+            Side.left,
+            grid.get(2,i)
+        );
+        grid.get( (i+1)%3,0).link(
+            Side.top,
+            grid.get(i,2)
+        );
+    }
+
+
+    bridge.link(
+        Side.top,
+        grid.get(0,2),
+        Side.bottom,
+        {
+            addReverse:false
+        }
+    );
+
+    return bridge;
+}
+
 export function tickTackToeKlign(){
     const grid = new TileGrid(3,3, [
         tickTackToeLayer(4)
@@ -480,31 +515,29 @@ export function tickTackToeMirror(){
     return bridge;
 }
 
-export function hubRoom() {
-    const worlds = [
-        portSpace(),
-        shortWay(),
-        threeTurns(),
-        bridge(),
-        fastLane(),
-        ballPort(),
-        fastLane2(),
-        branches(),
-        mirror(),
-        tickTackToeBasic(),
-        tickTackToeDonut(),
-        tickTackToeKlign(),
-        tickTackToeMirror(),
-        branches2()
-    ];
+
+export function makeHubRoom(worlds: (Tile|Tile[][]|false)[], color = 'gold') {
 
     const root = [new ColorTile('red'), new ColorTile('pink')];
 
-
+    for(let i = 0; i < worlds.length - 1; i++){
+        const left = worlds[i];
+        const right = worlds[(i+1)];
+        if(left instanceof Array && right instanceof Array){
+            left[1].forEach((e,i) => {
+                e.link(
+                    Side.right,
+                    right[0][i]
+                );
+            });
+        }
+    }
     const out = worlds.reduceRight(
         ([rightTile, rightBridge], worldRoot) => {
-            const hubTile = new ColorTile('gold');
-            const hubBridge = new ColorTile('gold');
+            const hubTile = new ColorTile(color);
+            const hubBridge = new ColorTile(color);
+            const leftBridge = new ColorTile(color);
+            const leftTile = new ColorTile(color);
 
             hubTile.link(
                 Side.right,
@@ -516,25 +549,78 @@ export function hubRoom() {
                 rightBridge
             );
 
+
+            leftTile.link(
+                Side.right,
+                hubTile,
+            );
+
+            leftBridge.link(
+                Side.right,
+                hubBridge
+            );
+
             hubBridge.link(
                 Side.bottom,
                 hubTile
             );
-            hubBridge.link(
+            if(worldRoot !== false) hubBridge.link(
                 Side.top,
-                worldRoot
+                worldRoot instanceof Array ? worldRoot[1][0] : worldRoot
+            );
+            if(worldRoot instanceof Array) leftBridge.link(
+                Side.top,
+                worldRoot[0][0]
             );
             hubTile.link(
                 Side.top,
                 hubBridge
             );
+            leftBridge.link(
+                Side.bottom,
+                leftTile
+            );
 
 
-
-            return [hubTile, hubBridge];
+            return (worldRoot instanceof Array) ? [leftTile, leftBridge] : [hubTile, hubBridge];
         },
         root
     );
+    console.log(root);
+    const base = root.map(e=>e.links[Side.left].to);
+    
     root.map(e => e.isolate());
-    return out[0];
+    return [out,base];
+}
+
+
+export function hubRoom() {
+    const data = makeHubRoom([
+        makeHubRoom([
+            portSpace(),
+            ballPort(),
+            mirror(),
+            bridge()
+        ],'pink'),
+        makeHubRoom([
+            shortWay(),
+            fastLane(),
+            fastLane2(),
+            threeTurns()
+        ],'cyan'),
+        makeHubRoom([
+            branches(),
+            branches2(),
+        ],'red'),
+        makeHubRoom([
+            tickTackToeBasic(),
+            tickTackToeDonut(),
+            tickTackToeKlign(),
+            tickTackToeMirror(),
+            
+            tickTackToeDonutOffset()
+        ],'grey')
+    ]);
+
+    return data[0][1];
 }
