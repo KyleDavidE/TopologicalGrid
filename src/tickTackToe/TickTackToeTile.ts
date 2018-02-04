@@ -114,7 +114,7 @@ export class TickTackToeTile extends ColorTile{
         return false;
     }
     linkGame(game: TickTackToeGame = new TickTackToeGame()) {
-        if(this.game === null || this.game.won !== Turn.NONE || this.game.blankTiles  === 0){
+        if(this.game !== game){
             this.occupied = Turn.NONE;
             this.isWinningLine = false;
             this.game = game;
@@ -128,6 +128,13 @@ export class TickTackToeTile extends ColorTile{
                 }
             })
         }
+    }
+    stepOn(t: number){
+        super.stepOn(t);
+        if(this.game === null){
+            this.linkGame();    
+        }
+        
     }
     interact(){
         if(this.game === null || this.game.won !== Turn.NONE || this.game.blankTiles  === 0){

@@ -183,15 +183,14 @@ export class Projector {
         const addRoot = (root: TileView, x: number, y: number) => {
             if (!root) return;
 
-            if (x === 0) {
+            if (x === 0 && y === 0) {
                 if (offsetX <= EDGE_GLITCH_REDUCTION_DIST) {
                     addRoot(root.getNeighbor(Side.left), -1, y);
                 }
                 if (offsetX >= 1 - EDGE_GLITCH_REDUCTION_DIST) {
                     addRoot(root.getNeighbor(Side.right), 1, y);
                 }
-            }
-            if (y === 0) {
+            
                 if (offsetY <= EDGE_GLITCH_REDUCTION_DIST) {
                     addRoot(root.getNeighbor(Side.top), x, -1);
                 }
