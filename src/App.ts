@@ -21,7 +21,7 @@ export class App {
     
     renderer: Renderer;
     can: HTMLCanvasElement;
-    posn: Cursor = new Cursor({x:0,y:0});
+    posn: Cursor = new Cursor({x:0.5,y:0.5});
     view: TileView = level.getView(0);
     monitorKeys: KeyState<boolean> = {
         w:false,
