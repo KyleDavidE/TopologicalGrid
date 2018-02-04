@@ -103,11 +103,6 @@ export class Renderer {
                     10
                 );
             }
-            if(item.glassLevel > 0){
-                this.ctx.globalAlpha = 1 - (1/2)**(item.glassLevel);
-                this.ctx.fillStyle = "white";
-                this.ctx.fillRect(0,0, TILE_SIZE, TILE_SIZE);
-            }
 
 
 

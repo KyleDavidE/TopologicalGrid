@@ -33,14 +33,13 @@ class ProjectionPath {
     isRoot: boolean;
     angles = new Float64Array(32)
     anglesLength = 0
-    glassLevel = 0
     constructor() {
 
     }
-    static id(view: TileView, x: number, y: number, glassLevel: number) {
-        return `${view.id},${x},${y},${glassLevel}`;
+    static id(view: TileView, x: number, y: number) {
+        return `${view.id},${x},${y}`;
     }
-    init(view: TileView, x: number, y: number, isRoot = false, offsetX: number, offsetY: number, glassLevel: number) {
+    init(view: TileView, x: number, y: number, isRoot = false, offsetX: number, offsetY: number) {
         this.view = view;
         this.x = x;
         this.y = y;
@@ -48,7 +47,6 @@ class ProjectionPath {
         this.centerAngle = Math.atan2(y, x);
         this.offsetX = offsetX;
         this.offsetY = offsetY;
-        this.glassLevel = glassLevel;
         if (isRoot) {
 
             //    this.angles.push(
@@ -88,7 +86,7 @@ class ProjectionPath {
             this.angles[this.anglesLength++] = maxTheta;
                 
         }
-        this.id = ProjectionPath.id(view, x, y, glassLevel);
+        this.id = ProjectionPath.id(view, x, y);
         this.isRoot = isRoot;
         return this;
     }
@@ -182,22 +180,22 @@ export class Projector {
         this.offsetY = offsetY;
         this.renderRadiusX = renderRadiusX;
         this.renderRadiusY = renderRadiusY;
-        const addRoot = (root: TileView, x: number, y: number, glassLevel: number) => {
+        const addRoot = (root: TileView, x: number, y: number) => {
             if (!root) return;
 
             if (x === 0 && y === 0) {
                 if (offsetX <= EDGE_GLITCH_REDUCTION_DIST) {
-                    addRoot(root.getNeighbor(Side.left), -1, y, glassLevel + root.getGlassLevel(Side.left));
+                    addRoot(root.getNeighbor(Side.left), -1, y);
                 }
                 if (offsetX >= 1 - EDGE_GLITCH_REDUCTION_DIST) {
-                    addRoot(root.getNeighbor(Side.right), 1, y, glassLevel + root.getGlassLevel(Side.right));
+                    addRoot(root.getNeighbor(Side.right), 1, y);
                 }
             
                 if (offsetY <= EDGE_GLITCH_REDUCTION_DIST) {
-                    addRoot(root.getNeighbor(Side.top), x, -1, glassLevel + root.getGlassLevel(Side.top));
+                    addRoot(root.getNeighbor(Side.top), x, -1);
                 }
                 if (offsetY >= 1 - EDGE_GLITCH_REDUCTION_DIST) {
-                    addRoot(root.getNeighbor(Side.bottom), x, 1, glassLevel + root.getGlassLevel(Side.bottom));
+                    addRoot(root.getNeighbor(Side.bottom), x, 1);
                 }
             }
             const rootPath = this.projectionPathPool.pop().init(
@@ -206,8 +204,7 @@ export class Projector {
                 y,
                 true,
                 offsetX,
-                offsetY,
-                glassLevel
+                offsetY
             );
             this.lookup.set(
                 rootPath.id,
@@ -217,7 +214,7 @@ export class Projector {
             this.que.push(rootPath);
             
         }
-        addRoot(root, 0, 0, 0);
+        addRoot(root, 0, 0);
 
 
         while (this.que.length > 0) {
@@ -234,10 +231,10 @@ export class Projector {
 
     considerItem(item: ProjectionPath) {
         if (Math.sqrt(item.x ** 2 + item.y ** 2) > 100) return;
-        if (item.x >= 0 || item.isRoot) this.considerSide(item, true, 1, 0, item.x + 1, item.y);
-        if (item.y >= 0 || item.isRoot) this.considerSide(item, false, 1, 1, item.x, item.y + 1);
-        if (item.x < 1 || item.isRoot) this.considerSide(item, true, 0, 2, item.x - 1, item.y);
-        if (item.y < 1 || item.isRoot) this.considerSide(item, false, 0, 3, item.x, item.y - 1);
+        if (item.x >= 0 || item.isRoot) this.considerSide(item, true, 1, item.view.getNeighbor(0), item.x + 1, item.y);
+        if (item.y >= 0 || item.isRoot) this.considerSide(item, false, 1, item.view.getNeighbor(1), item.x, item.y + 1);
+        if (item.x < 1 || item.isRoot) this.considerSide(item, true, 0, item.view.getNeighbor(2), item.x - 1, item.y);
+        if (item.y < 1 || item.isRoot) this.considerSide(item, false, 0, item.view.getNeighbor(3), item.x, item.y - 1);
     }
 
     /**
@@ -245,14 +242,13 @@ export class Projector {
      * @param axis true = line goes up down
      */
 
-    considerSide(item: ProjectionPath, axis: boolean, offsetZ: number, side: Side, nextX: number, nextY: number) {
+    considerSide(item: ProjectionPath, axis: boolean, offsetZ: number, nextTile: TileView, nextX: number, nextY: number) {
         if(
             nextX - this.offsetX > this.renderRadiusX ||
             nextX - this.offsetX + 1 < -this.renderRadiusX ||
             nextY - this.offsetY > this.renderRadiusY ||
             nextY - this.offsetY + 1 < -this.renderRadiusY
         ) return;
-        const nextTile = item.view.getNeighbor(side);
         if (!nextTile) return;
         if (DEBUG) console.log("consider side", axis, offsetZ, nextTile, nextX, nextY, item.id);
         const lineZ = axis ? item.x + offsetZ - this.offsetX : item.y + offsetZ - this.offsetY;
@@ -302,13 +298,12 @@ export class Projector {
             }
             if (newFromAng !== newToAng) {
                 if (newItem === null) {
-                    const nextGlass = item.glassLevel + item.view.getGlassLevel(side);
-                    const key = ProjectionPath.id(nextTile, nextX, nextY, nextGlass);
+                    const key = ProjectionPath.id(nextTile, nextX, nextY);
                     if (this.lookup.has(key)) {
                         newItem = this.lookup.get(key);
                     } else {
                         newItem = this.projectionPathPool.pop();
-                        newItem.init(nextTile, nextX, nextY, false, this.offsetX, this.offsetY, nextGlass);
+                        newItem.init(nextTile, nextX, nextY, false, this.offsetX, this.offsetY);
                         this.lookup.set(key, newItem);
                         this.que.push(newItem);
                     }

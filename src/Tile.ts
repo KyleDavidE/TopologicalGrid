@@ -25,8 +25,7 @@ export class Tile{
 
     link(fromSide: Side, toTile: Tile, toSide = reverseSide(fromSide), {
         reflect = false,
-        addReverse = true,
-        glassLevel = 0
+        addReverse = true
     } = {}){
         
         this.unlink(fromSide);
@@ -35,16 +34,14 @@ export class Tile{
             toTile,
             fromSide,
             toSide,
-            reflect,
-            glassLevel
+            reflect
         );
         
 
         if(addReverse){
             toTile.link(toSide, this, fromSide, {
                 addReverse: false,
-                reflect,
-                glassLevel
+                reflect
             });
         }
     }
