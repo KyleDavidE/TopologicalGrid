@@ -2,6 +2,7 @@ import { Projector } from "./Projector";
 import { TileView } from "./TileView";
 import { DirMtx } from "./DirMtx";
 import { TILE_SIZE } from "./opts";
+import { RenderableEntity } from "./RenderableEntity";
 function maxSquareSquare(z: number) {
     return Math.max(z ** 2, (z + 1) ** 2);
 }
@@ -86,36 +87,52 @@ export class Renderer {
             this.ctx.translate(item.x * TILE_SIZE, item.y * TILE_SIZE);
             this.ctx.translate(-offsetX * TILE_SIZE, -offsetY * TILE_SIZE);
 
-            this.ctx.translate(-0.5 * TILE_SIZE, -0.5 * TILE_SIZE);
-            // this.applyOrientation(item.view.orientation);
-            this.ctx.translate(0.5 * TILE_SIZE, 0.5 * TILE_SIZE);
+            this.applyOrientation(item.view.orientation);
 
             // this.ctx.beginPath();
             // this.ctx.rect(0, 0, 1, 1);
             // this.ctx.clip();
             item.view.tile.render(this.ctx, t);
             if(DEBUG){
-                this.ctx.fillStyle = "grey";
+                this.ctx.fillStyle = "black";
                 
                 this.ctx.fillText(
-                    `${item.angles.map(e=> Math.round(e*10) ).join('\n')}`,
+                    `${item.view.id}`,
                     10,
                     10
                 );
             }
 
+            let entitiesInit = false;
+            const tile = item.view.tile;
+            for(let entity of item.view.tile.entities){
 
+                const isOnTile = entity.isOnTile(item.view.tile);
+
+                if(!isOnTile){
+                    tile.entities.delete(entity);
+                }else{
+                    if(!entitiesInit){
+                        this.ctx.beginPath();
+                        this.ctx.rect(0,0,TILE_SIZE,TILE_SIZE);
+                        this.ctx.clip();
+                        entitiesInit= true;
+                    }
+                    entity.renderInContext(this, item.view.tile);
+                }
+                
+            }
 
             this.ctx.restore();
         }
 
-        this.ctx.beginPath();
-        this.ctx.fillStyle = 'black';
-        this.ctx.arc(0, 0, TILE_SIZE / 3, 0, Math.PI * 2);
+        // this.ctx.beginPath();
+        // this.ctx.fillStyle = 'black';
+        // this.ctx.arc(0, 0, TILE_SIZE / 3, 0, Math.PI * 2);
 
-        this.ctx.fill();
+        // this.ctx.fill();
 
-
+        
 
         this.ctx.restore();
 
@@ -134,10 +151,12 @@ export class Renderer {
 
     }
 
-    applyOrientation(orientation: DirMtx) {
+    applyOrientation(orientation: DirMtx, doTranslate = true) {
         const { ctx } = this;
+        if(doTranslate) this.ctx.translate(0.5 * TILE_SIZE, 0.5 * TILE_SIZE);
         ctx.rotate((orientation & 0b11) * Math.PI / 2);
         if (orientation & 0b100) ctx.scale(1, -1);
+        if(doTranslate) this.ctx.translate(-0.5 * TILE_SIZE, -0.5 * TILE_SIZE);        
     }
 
 }

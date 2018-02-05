@@ -1,6 +1,8 @@
 import { Tile } from "./Tile";
 import { DirMtx, dirMtxProduct, dirMtxApply, dirMtxInverse } from "./DirMtx";
 import { Side } from "./Side";
+import { Entity } from "./Entity";
+import { RenderableEntity } from "./RenderableEntity";
 
 
 const lookupMaps = [...Array(8)].map(
@@ -62,5 +64,8 @@ export class TileView{
     interact(t: number){
         this.tile.interact(t);
 
+    }
+    track(entity: RenderableEntity){
+        this.tile.track(entity);
     }
 }

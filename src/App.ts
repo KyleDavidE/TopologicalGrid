@@ -3,8 +3,12 @@ import * as testLevels from './testLevels';
 import { TileView } from "./TileView";
 import { Cursor } from "./Cursor";
 import { Side, reverseSide, getOffside} from "./Side";
+import { Player } from "./Player";
 
 const level = testLevels.hubRoom();
+
+const player = new Player(level.getView(0).getNeighbor(Side.right));
+
 
 interface KeyState<Val>{
     [key: string]: Val
@@ -21,8 +25,7 @@ export class App {
     
     renderer: Renderer;
     can: HTMLCanvasElement;
-    posn: Cursor = new Cursor({x:0.5,y:0.5});
-    view: TileView = level.getView(0);
+    vel: Cursor = new Cursor({x:0,y:0});
     monitorKeys: KeyState<boolean> = {
         w:false,
         a:false,
@@ -53,13 +56,16 @@ export class App {
             this.can.width = innerWidth;
             this.can.height = innerHeight;
         }
-        this.view.stepOn(t);
         
         this.tryMove(dt);
+        const ctr = player.center;
+        
+        ctr.view.stepOn(t);
+        
         this.renderer.render(
-            this.view,
-            this.posn.x,
-            this.posn.y,
+            ctr.view,
+            ctr.pt.x,
+            ctr.pt.y,
             t
         );
 
@@ -74,7 +80,7 @@ export class App {
         }
         if(e.key === "e" && !this.interactLock){
             this.interactLock = true;
-            this.view.interact(performance.now());
+            player.center.view.interact(performance.now());
 
         }
     }
@@ -86,47 +92,52 @@ export class App {
             this.interactLock = false;
         }
         if(e.key === "h"){
-            this.view = level.getView(0);
+            player.respawn(level.getView(0));
         }
     }
     tryMove(dt: number){
+        this.vel.x = 0;
+        this.vel.y = 0;
         for(let key in movementKeys){
             if(this.monitorKeys[key]){
-                this.posn.step(
+                this.vel.step(
                     movementKeys[key],
                     PLAYER_SPEED * dt
                 );
             }
         }
-        if(this.posn.x > 1){
-            if(!this.tryStep(Side.right)){
-                this.posn.x = 1
-            }
+        if(this.vel.x !== 0 || this.vel.y !== 0){
+            player.move(this.vel.x, this.vel.y);
         }
-        if (this.posn.y > 1) {
-            if (!this.tryStep(Side.bottom)) {
-                this.posn.y = 1;
-            }
-        }
-        if (this.posn.x < 0) {
-            if (!this.tryStep(Side.left)) {
-                this.posn.x = 0;
-            }
-        }
-        if (this.posn.y < 0) {
-            if (!this.tryStep(Side.top)) {
-                this.posn.y = 0;
-            }
-        }
+        // if(this.posn.x > 1){
+        //     if(!this.tryStep(Side.right)){
+        //         this.posn.x = 1
+        //     }
+        // }
+        // if (this.posn.y > 1) {
+        //     if (!this.tryStep(Side.bottom)) {
+        //         this.posn.y = 1;
+        //     }
+        // }
+        // if (this.posn.x < 0) {
+        //     if (!this.tryStep(Side.left)) {
+        //         this.posn.x = 0;
+        //     }
+        // }
+        // if (this.posn.y < 0) {
+        //     if (!this.tryStep(Side.top)) {
+        //         this.posn.y = 0;
+        //     }
+        // }
         
     }
-    tryStep(dir: Side){
-        if(this.view.getNeighbor(dir)){
-            this.view = this.view.getNeighbor(dir);
-            this.posn.step(dir,-1);
-            return true;
-        }
-        return false;
-    }
+    // tryStep(dir: Side){
+    //     if(this.view.getNeighbor(dir)){
+    //         this.view = this.view.getNeighbor(dir);
+    //         this.posn.step(dir,-1);
+    //         return true;
+    //     }
+    //     return false;
+    // }
 }
 

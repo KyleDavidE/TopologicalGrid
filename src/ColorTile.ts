@@ -17,8 +17,9 @@ export class ColorTile extends Tile{
         ctx.globalAlpha = (1 - Math.pow(2, (this.stepTime - t) / 1000) / 3) * this.noiseLevel;
         ctx.fillStyle = this.color;
         ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-        ctx.globalAlpha = 1;
         
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "black";
     }
 
     stepOn(t: number){

@@ -2,13 +2,14 @@ import {SideReference} from './SideReference';
 import {Side, reverseSide} from './Side';
 import { TileView } from './TileView';
 import { DirMtx } from './DirMtx';
+import { RenderableEntity } from './RenderableEntity';
 
 let nextId = 0;
 export class Tile{
     loadTimer: number;
     links: SideReference[] = [null, null, null, null];
     id = nextId++;
-
+    entities = new Set<RenderableEntity>();
     getReference(i: Side){
         return this.links[i];
     }
@@ -63,5 +64,8 @@ export class Tile{
     }
     interact(t: any): any {
         
+    }
+    track(entity: RenderableEntity) {
+        this.entities.add(entity);
     }
 }
