@@ -11,6 +11,7 @@ export class Entity{
     centerOld: ViewCursor;
     width: number
     height: number
+    lastMovementDir: Side
     constructor(width: number, height: number, baseTile: TileView){
         this.init(width,height,baseTile);
         
@@ -53,7 +54,7 @@ export class Entity{
         let xLocked = xLeft === 0;
         let yLocked = yLeft === 0;
         let i = 0;
-        
+        this.lastMovementDir = xLeft >= yLeft ? xSide : ySide;
         while( (xLeft > 0 || yLeft > 0) && i < 100){
             i++;
             if(!xLocked && xLeft > 0){
@@ -71,6 +72,8 @@ export class Entity{
             }
             if(xLocked) break;
         }
+
+        return xLeft === 0 && yLeft === 0;
 
         
         

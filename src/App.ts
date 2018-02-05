@@ -4,10 +4,10 @@ import { TileView } from "./TileView";
 import { Cursor } from "./Cursor";
 import { Side, reverseSide, getOffside} from "./Side";
 import { Player } from "./Player";
+import { Stepable } from "./stepable";
 
 const level = testLevels.hubRoom();
 
-const player = new Player(level.getView(0).getNeighbor(Side.right));
 
 
 interface KeyState<Val>{
@@ -19,10 +19,20 @@ const movementKeys: KeyState<Side> = {
     s: Side.bottom,
     d: Side.right
 }
+
+
+const shootKeys: KeyState<Side> = {
+    i: Side.top,
+    l: Side.right,
+    k: Side.bottom,
+    j: Side.left
+}
 const PLAYER_SPEED = 5/1000
 
 export class App {
     
+    player: Player;
+    stepables: Set<Stepable> = new Set<Stepable>();
     renderer: Renderer;
     can: HTMLCanvasElement;
     vel: Cursor = new Cursor({x:0,y:0});
@@ -49,6 +59,7 @@ export class App {
         document.onkeyup = (e) => {
             this.keyUp(e);
         }
+        this.player = new Player(level.getView(0).getNeighbor(Side.right), this);
     }
 
     tick(t: number, dt: number) {
@@ -58,7 +69,12 @@ export class App {
         }
         
         this.tryMove(dt);
-        const ctr = player.center;
+        for(let stepable of this.stepables){
+            if(!stepable.step(dt)){
+                this.stepables.delete(stepable);
+            }
+        }
+        const ctr = this.player.center;
         
         ctr.view.stepOn(t);
         
@@ -80,8 +96,11 @@ export class App {
         }
         if(e.key === "e" && !this.interactLock){
             this.interactLock = true;
-            player.center.view.interact(performance.now());
+            this.player.center.view.interact(performance.now());
 
+        }
+        if(e.key in shootKeys){
+            this.player.shoot(shootKeys[e.key]);
         }
     }
     keyUp(e: KeyboardEvent) {
@@ -92,7 +111,7 @@ export class App {
             this.interactLock = false;
         }
         if(e.key === "h"){
-            player.respawn(level.getView(0));
+            this.player.respawn(level.getView(0));
         }
     }
     tryMove(dt: number){
@@ -107,7 +126,7 @@ export class App {
             }
         }
         if(this.vel.x !== 0 || this.vel.y !== 0){
-            player.move(this.vel.x, this.vel.y);
+            this.player.move(this.vel.x, this.vel.y);
         }
         // if(this.posn.x > 1){
         //     if(!this.tryStep(Side.right)){
@@ -139,5 +158,8 @@ export class App {
     //     }
     //     return false;
     // }
+    addStepable(stepable: Stepable){
+        this.stepables.add(stepable);
+    }
 }
 

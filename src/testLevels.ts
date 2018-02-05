@@ -516,6 +516,27 @@ export function tickTackToeMirror(){
 }
 
 
+export function mobius(W=5,H=5){
+    const grid = new TileGrid(W,H,[
+        dynamicColor(W,H)
+    ]);
+
+    for(let i = 0; i < H; i++){
+        grid.get(W-1,i).link(
+            Side.right,
+            grid.get(0,H-i-1),
+            Side.left,
+            {
+                reflect: true
+            }
+        )
+    }
+
+    
+
+    return grid.get(0,H-1);
+}
+
 export function makeHubRoom(worlds: (Tile|Tile[][]|false)[], color = 'gold') {
 
     const root = [new ColorTile('red'), new ColorTile('pink')];
@@ -619,7 +640,11 @@ export function hubRoom() {
             tickTackToeMirror(),
             
             tickTackToeDonutOffset()
-        ],'grey')
+        ],'grey'),
+        makeHubRoom([
+            mobius(),
+            mobius(30)
+        ],'blue')
     ]);
 
     return data[0][1];

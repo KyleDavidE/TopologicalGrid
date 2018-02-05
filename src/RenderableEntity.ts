@@ -7,14 +7,16 @@ import { TileView } from "./TileView";
 
 
 export class RenderableEntity extends Entity{
+    gone = false;
     constructor(width: number, height: number, baseTile: TileView){
         super(width, height, baseTile);
         console.log(this.trackingTiles);
         this.register();
     }
     move(dx: number, dy: number){
-        super.move(dx, dy);
+        const out = super.move(dx, dy);
         this.register();
+        return  out;
     }
     respawn(tile: TileView){
         super.respawn(tile);
@@ -23,8 +25,12 @@ export class RenderableEntity extends Entity{
     render(ctx: CanvasRenderingContext2D){
         
     }
+    kill(){
+        this.gone = true;
+    }
     
     isOnTile(tile: Tile){
+        if(this.gone) return false;
         for(let x = 0; x < this.trackWidth; x++){
             for(let y = 0; y < this.trackWidth; y++){
                 if(this.trackingTiles[x][y].view.tile.id === tile.id){
