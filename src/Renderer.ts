@@ -57,12 +57,13 @@ export class Renderer {
                     this.ctx.stroke();
                 }
             }
-            this.ctx.beginPath();
             const r = Math.sqrt(
                 maxSquareSquare(item.x - offsetX) +
                 maxSquareSquare(item.y - offsetY)
             ) + Math.sqrt(2);
             if(!item.isRoot && item.anglesLength !== 2){
+                this.ctx.beginPath();
+                
                 for (let i = 0; i < item.anglesLength; i += 2) {
 
                     const fromAng = item.angles[i];
@@ -83,10 +84,10 @@ export class Renderer {
                     this.ctx.stroke();
                 }
                 
-                if(item.anglesLength !== 2){
-                    this.ctx.clip();
-                }
+                this.ctx.clip();
+                
             }
+            
             this.ctx.translate(item.x * TILE_SIZE, item.y * TILE_SIZE);
             this.ctx.translate(-offsetX * TILE_SIZE, -offsetY * TILE_SIZE);
 
