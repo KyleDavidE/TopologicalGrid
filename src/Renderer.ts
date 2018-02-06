@@ -62,8 +62,8 @@ export class Renderer {
                 maxSquareSquare(item.x - offsetX) +
                 maxSquareSquare(item.y - offsetY)
             ) + Math.sqrt(2);
-            if(!item.isRoot){
-                if(item.anglesLength !== 2) for (let i = 0; i < item.anglesLength; i += 2) {
+            if(!item.isRoot && item.anglesLength !== 2){
+                for (let i = 0; i < item.anglesLength; i += 2) {
 
                     const fromAng = item.angles[i];
                     const toAng = item.angles[i + 1];
@@ -82,7 +82,10 @@ export class Renderer {
                     this.ctx.strokeStyle = "pink";
                     this.ctx.stroke();
                 }
-                if(item.anglesLength !== 2) this.ctx.clip();
+                
+                if(item.anglesLength !== 2){
+                    this.ctx.clip();
+                }
             }
             this.ctx.translate(item.x * TILE_SIZE, item.y * TILE_SIZE);
             this.ctx.translate(-offsetX * TILE_SIZE, -offsetY * TILE_SIZE);
@@ -92,6 +95,7 @@ export class Renderer {
             // this.ctx.beginPath();
             // this.ctx.rect(0, 0, 1, 1);
             // this.ctx.clip();
+            
             item.view.tile.render(this.ctx, t);
             if(DEBUG){
                 this.ctx.fillStyle = "black";

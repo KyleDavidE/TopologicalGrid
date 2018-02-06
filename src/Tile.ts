@@ -10,6 +10,13 @@ export class Tile{
     links: SideReference[] = [null, null, null, null];
     id = nextId++;
     entities = new Set<RenderableEntity>();
+    tileViews: TileView[];
+    constructor(){
+        this.tileViews = Array(8);
+        for(let i = 0; i < 8; i++){
+            this.tileViews[i] = new TileView(this, i);
+        }
+    }
     getReference(i: Side){
         return this.links[i];
     }
@@ -48,7 +55,7 @@ export class Tile{
     }
 
     getView(mtx: DirMtx){
-        return TileView.lookup(this, mtx);
+        return this.tileViews[mtx];
     }
 
     render(ctx: CanvasRenderingContext2D, t: number){

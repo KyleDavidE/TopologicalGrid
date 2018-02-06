@@ -20,15 +20,16 @@ export class TileView{
     id: string;
     
     static lookup(tile: Tile, orientation: DirMtx) {
-        const map = lookupMaps[orientation];
+        return tile.tileViews[orientation];
+        // const map = lookupMaps[orientation];
         
-        if(!map.has(tile)){
-            const view = new TileView(tile, orientation);
-            map.set(tile, view);
-            return view;
-        }
+        // if(!map.has(tile)){
+        //     const view = new TileView(tile, orientation);
+        //     map.set(tile, view);
+        //     return view;
+        // }
 
-        return map.get(tile);
+        // return map.get(tile);
     }
 
     constructor(tile: Tile, orientation: DirMtx){
