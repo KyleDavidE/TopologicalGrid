@@ -5,6 +5,8 @@ import { Cursor } from "./Cursor";
 import { Side, reverseSide, getOffside} from "./Side";
 import { Player } from "./Player";
 import { Stepable } from "./stepable";
+import { TILE_SIZE } from "./opts";
+import { ViewCursor } from "./ViewCursor";
 
 const level = testLevels.hubRoom();
 
@@ -31,6 +33,8 @@ const PLAYER_SPEED = 5/1000
 
 export class App {
     
+    locCam: ViewCursor;
+    watNumber: number;
     player: Player;
     stepables: Set<Stepable> = new Set<Stepable>();
     renderer: Renderer;
@@ -42,6 +46,7 @@ export class App {
         s:false,
         d:false
     };
+    cam: ViewCursor;
     interactLock = false
     constructor() {
         this.can = document.getElementById("can") as HTMLCanvasElement;
@@ -49,7 +54,7 @@ export class App {
         
         requestAnimationFrame(t =>
             requestAnimationFrame(
-                (nt) => this.tick(nt, nt - t)
+                (nt) => this.tick(nt, nt - t, Math.random())
             )
         );
 
@@ -59,10 +64,21 @@ export class App {
         document.onkeyup = (e) => {
             this.keyUp(e);
         }
+        this.can.ondblclick = (e) => {
+            this.can.requestPointerLock();
+            this.allEvt(e);
+        }
+        this.can.onmousemove = (e) => {
+            if(document.pointerLockElement === this.can){
+                if(Math.abs(e.movementX) < 200 && Math.abs(e.movementY) < 200) this.player.move(e.movementX/TILE_SIZE,e.movementY/TILE_SIZE)
+            }
+            this.allEvt(e);
+        }
         this.player = new Player(level.getView(0).getNeighbor(Side.right), this);
+        this.cam = this.player.center.clone();
     }
 
-    tick(t: number, dt: number) {
+    tick(t: number, dt: number, wat: number) {
         if(this.can.width !== innerWidth || this.can.height !== innerHeight){
             this.can.width = innerWidth;
             this.can.height = innerHeight;
@@ -74,19 +90,28 @@ export class App {
                 this.stepables.delete(stepable);
             }
         }
-        const ctr = this.player.center;
+        const ctr = this.locCam || this.player.center;
+        this.cam.copy(ctr);
+        const offsetX = 0;
+        const offsetY = 0;
         
         ctr.view.stepOn(t);
-        
+        if(!this.cam.move(offsetX, offsetY)){
+            console.log("wat");
+        }
         this.renderer.render(
-            ctr.view,
-            ctr.pt.x,
-            ctr.pt.y,
-            t
+            this.cam.view,
+            this.cam.pt.x,
+            this.cam.pt.y,
+            t,
+            offsetX,
+            offsetY
         );
+        if(this.watNumber !== wat)  console.log('wat');
+        this.watNumber = wat;
 
         requestAnimationFrame(
-            (nt) => this.tick(nt, nt - t)
+            (nt) => this.tick(nt, nt - t, wat)
         );
     }
 
@@ -102,6 +127,16 @@ export class App {
         if(e.key in shootKeys){
             this.player.shoot(shootKeys[e.key]);
         }
+        this.allEvt(e);
+        
+    }
+    allEvt(e: MouseEvent|KeyboardEvent){
+        if(e.shiftKey && !this.locCam){
+            this.locCam = this.player.center.clone();
+        }
+        if(!e.shiftKey){
+            this.locCam = null;
+        }
     }
     keyUp(e: KeyboardEvent) {
         if (e.key in this.monitorKeys) {
@@ -113,6 +148,8 @@ export class App {
         if(e.key === "h"){
             this.player.respawn(level.getView(0));
         }
+        this.allEvt(e);
+        
     }
     tryMove(dt: number){
         this.vel.x = 0;

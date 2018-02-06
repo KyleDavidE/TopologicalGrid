@@ -24,15 +24,15 @@ export class Renderer {
         this.ctx = can.getContext('2d');
     }
 
-    render(root: TileView, offsetX: number, offsetY: number, t:number) {
-        const items = this.projector.project(root, offsetX, offsetY, this.can.width / TILE_SIZE / 2, this.can.height / TILE_SIZE / 2);
+    render(root: TileView, offsetX: number, offsetY: number, t:number, displayOffsetX: number, displayOffsetY: number) {        
+        const items = this.projector.project(root, offsetX, offsetY, this.can.width / TILE_SIZE / 2, this.can.height / TILE_SIZE / 2, displayOffsetX, displayOffsetY);
         this.ctx.fillStyle = 'rgba(0,0,0,1)';
         this.ctx.fillRect(0,0,this.can.width,this.can.height);
         this.ctx.save();
         
 
         this.ctx.translate(this.can.width / 2, this.can.height / 2);
-        
+        this.ctx.translate(displayOffsetX * TILE_SIZE, displayOffsetY * TILE_SIZE)
         
         // this.ctx.scale(TILE_SIZE, TILE_SIZE);
 
@@ -63,7 +63,7 @@ export class Renderer {
                 maxSquareSquare(item.y - offsetY)
             ) + Math.sqrt(2);
             if(!item.isRoot){
-                for (let i = 0; i < item.anglesLength; i += 2) {
+                if(item.anglesLength !== 2) for (let i = 0; i < item.anglesLength; i += 2) {
 
                     const fromAng = item.angles[i];
                     const toAng = item.angles[i + 1];

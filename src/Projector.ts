@@ -53,13 +53,13 @@ class ProjectionPath {
             //        0,
             //        Math.PI / 2
             //    );
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 3; i++) {
                 this.angles[this.anglesLength++] = (
-                    Math.PI / 4 * (i + .5)
+                    Math.PI *2/ 3 * (i + .5)
                 );
 
                 this.angles[this.anglesLength++] = (
-                    Math.PI / 4 * (i + 1.5)
+                    Math.PI * 2/ 3 * (i + 1.5)
                 );
 
             }
@@ -164,6 +164,8 @@ class ProjectionPath {
 const EDGE_GLITCH_REDUCTION_DIST = 1 / 100000;
 
 export class Projector {
+    displayOffsetY: number;
+    displayOffsetX: number;
     renderRadiusX: number;
     renderRadiusY: number;
     offsetY: number;
@@ -172,7 +174,7 @@ export class Projector {
     que: ProjectionPath[];
     projectionPathPool = new LinearObjectPool<ProjectionPath>(() => new ProjectionPath());
 
-    project(root: TileView, offsetX: number, offsetY: number, renderRadiusX: number, renderRadiusY: number): IterableIterator<ProjectionPath> {
+    project(root: TileView, offsetX: number, offsetY: number, renderRadiusX: number, renderRadiusY: number, displayOffsetX: number, displayOffestY: number): IterableIterator<ProjectionPath> {
         this.projectionPathPool.done();
         this.que = [];
         this.lookup.clear();
@@ -180,6 +182,8 @@ export class Projector {
         this.offsetY = offsetY;
         this.renderRadiusX = renderRadiusX;
         this.renderRadiusY = renderRadiusY;
+        this.displayOffsetX = displayOffsetX;
+        this.displayOffsetY = displayOffestY;
         const addRoot = (root: TileView, x: number, y: number) => {
             if (!root) return;
 
@@ -244,10 +248,10 @@ export class Projector {
 
     considerSide(item: ProjectionPath, axis: boolean, offsetZ: number, nextTile: TileView, nextX: number, nextY: number) {
         if(
-            nextX - this.offsetX > this.renderRadiusX ||
-            nextX - this.offsetX + 1 < -this.renderRadiusX ||
-            nextY - this.offsetY > this.renderRadiusY ||
-            nextY - this.offsetY + 1 < -this.renderRadiusY
+            nextX - this.offsetX + this.displayOffsetX > this.renderRadiusX ||
+            nextX - this.offsetX + 1 + this.displayOffsetX < -this.renderRadiusX ||
+            nextY - this.offsetY + this.displayOffsetY > this.renderRadiusY ||
+            nextY - this.offsetY + 1 + this.displayOffsetY < -this.renderRadiusY
         ) return;
         if (!nextTile) return;
         if (DEBUG) console.log("consider side", axis, offsetZ, nextTile, nextX, nextY, item.id);

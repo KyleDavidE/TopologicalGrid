@@ -1,5 +1,5 @@
 import { Tile } from "./Tile";
-import { DirMtx, dirMtxProduct, dirMtxApply, dirMtxInverse } from "./DirMtx";
+import { DirMtx, dirMtxProduct, dirMtxApply, dirMtxInverse, dirMtxProductImpl } from "./DirMtx";
 import { Side } from "./Side";
 import { Entity } from "./Entity";
 import { RenderableEntity } from "./RenderableEntity";
@@ -49,7 +49,7 @@ export class TileView{
         if(edge){    
             return TileView.lookup(
                 edge.to,
-                dirMtxProduct(
+                dirMtxProductImpl(
                     this.orientation,
                     edge.mtx
                 )
