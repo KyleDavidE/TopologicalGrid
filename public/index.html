@@ -14,8 +14,17 @@
         margin: 0;
         background:black;
     }
-    #can{
-        display: block;
+    canvas{
+        display:block;
+        position: absolute;
+        top:0;
+        left:0;
+    }
+    canvas+canvas{
+        opacity: 0.5;
+    }
+    canvas+canvas+canvas{
+        opacity: 0.333;
     }
     </style>
 </body>
