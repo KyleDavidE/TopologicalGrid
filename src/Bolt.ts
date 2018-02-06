@@ -23,7 +23,7 @@ export class Bolt extends RenderableEntity implements Stepable {
         if(hitWall){
             this.age += dt * 10;
         }
-        const stayAlive = this.age < 5000;
+        const stayAlive = this.age < 10000;
         if(!stayAlive) this.kill();
         return stayAlive;
     }

@@ -537,6 +537,41 @@ export function mobius(W=5,H=5){
     return grid.get(0,H-1);
 }
 
+
+export function spiral(S=10){
+    let len = S - 2;
+    let dir = Side.right;
+    const grid = new TileGrid(S,S,[
+        dynamicColor(S,S)
+    ]);
+    let tile = grid.get(0,S-1);
+
+    while(len > 2){
+        len -= 1/2;
+        for(let i = 0; i < len; i++){
+            tile = tile.links[dir].to;
+        }
+        const ot = tile;
+        const nextDir:number = (dir - 1) & 0b11;
+        const mid = tile.links[dir].to;
+        
+        tile = mid.links[nextDir].to;
+        mid.isolate();
+        ot.link(
+            dir,
+            tile,
+            (nextDir + 2) & 3
+        );
+
+        dir = nextDir;
+
+        
+    }
+
+    return grid.get(0,S-1);
+}
+
+
 export function makeHubRoom(worlds: (Tile|Tile[][]|false)[], color = 'gold') {
 
     const root = [new ColorTile('red'), new ColorTile('pink')];
@@ -643,7 +678,8 @@ export function hubRoom() {
         ],'grey'),
         makeHubRoom([
             mobius(),
-            mobius(30)
+            mobius(30),
+            spiral()
         ],'blue')
     ]);
 
