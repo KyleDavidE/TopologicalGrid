@@ -30,16 +30,15 @@ const shootKeys: KeyState<Side> = {
     j: Side.left
 }
 const PLAYER_SPEED = 5/1000
-const N_CAM = 3;
+
 export class App {
     
     locCam: ViewCursor;
     watNumber: number;
     player: Player;
     stepables: Set<Stepable> = new Set<Stepable>();
-    renderers: Renderer[];
-    cans: HTMLCanvasElement[];
-    can: HTMLCanvasElement
+    renderer: Renderer;
+    can: HTMLCanvasElement;
     vel: Cursor = new Cursor({x:0,y:0});
     monitorKeys: KeyState<boolean> = {
         w:false,
@@ -50,10 +49,9 @@ export class App {
     cam: ViewCursor;
     interactLock = false
     constructor() {
-        this.cans = Array.from(Array(N_CAM), (_,i) => document.createElement("canvas"));
-        this.cans.forEach((e)=>document.body.appendChild(e));
-        this.renderers = this.cans.map(e=>new Renderer(e));
-        this.can = this.cans[N_CAM-1];
+        this.can = document.getElementById("can") as HTMLCanvasElement;
+        this.renderer = new Renderer(this.can);
+        
         requestAnimationFrame(t =>
             requestAnimationFrame(
                 (nt) => this.tick(nt, nt - t, Math.random())
@@ -81,6 +79,10 @@ export class App {
     }
 
     tick(t: number, dt: number, wat: number) {
+        if(this.can.width !== innerWidth || this.can.height !== innerHeight){
+            this.can.width = innerWidth;
+            this.can.height = innerHeight;
+        }
         
         this.tryMove(dt);
         for(let stepable of this.stepables){
@@ -89,32 +91,22 @@ export class App {
             }
         }
         const ctr = this.locCam || this.player.center;
-        for(let i = 0; i < this.cans.length; i++){
-            const can = this.cans[i];
-            const renderer = this.renderers[i];
-            this.cam.copy(ctr);
-            if(can.width !== innerWidth || can.height !== innerHeight){
-                can.width = innerWidth;
-                can.height = innerHeight;
-            }
-            
-            const offsetX = Math.sin(t/1000000 + i / N_CAM * 2 * Math.PI)/8;
-            const offsetY = Math.cos(t/1000000 + i / N_CAM * 2 * Math.PI)/8;
-            
-            ctr.view.stepOn(t);
-            if(!this.cam.move(offsetX, offsetY)){
-                console.log("wat");
-            }
-            renderer.render(
-                this.cam.view,
-                this.cam.pt.x,
-                this.cam.pt.y,
-                t,
-                offsetX,
-                offsetY
-            );
-        }
+        this.cam.copy(ctr);
+        const offsetX = 0;
+        const offsetY = 0;
         
+        ctr.view.stepOn(t);
+        if(!this.cam.move(offsetX, offsetY)){
+            console.log("wat");
+        }
+        this.renderer.render(
+            this.cam.view,
+            this.cam.pt.x,
+            this.cam.pt.y,
+            t,
+            offsetX,
+            offsetY
+        );
         if(this.watNumber !== wat)  console.log('wat');
         this.watNumber = wat;
 
