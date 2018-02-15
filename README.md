@@ -24,3 +24,7 @@ This allows the creation of Möbius stips, Torus, Klein bottles as well as more 
 # to run
 
 `yarn start:dev`
+
+# to build
+
+`yarn run build`
