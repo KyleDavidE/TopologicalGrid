@@ -12,27 +12,32 @@ function debugColor() {
 }
 const DEBUG = false;
 const SUPERDebug = false;
-
+const TARGET_SIZE = 12;
 // const DEBUGMAP = {7:true, 3:true};
 export class Renderer {
     overlay: CanvasGradient;
     ctx: CanvasRenderingContext2D;
     can: HTMLCanvasElement;
     projector = new Projector();
+    scale: number
     constructor(can: HTMLCanvasElement) {
         this.can = can;
         this.ctx = can.getContext('2d');
     }
 
     render(root: TileView, offsetX: number, offsetY: number, t:number, displayOffsetX: number, displayOffsetY: number) {        
-        const items = this.projector.project(root, offsetX, offsetY, this.can.width / TILE_SIZE / 2, this.can.height / TILE_SIZE / 2, displayOffsetX, displayOffsetY);
+        const scale = this.scale = 1/Math.max(TILE_SIZE*TARGET_SIZE/this.can.width,TILE_SIZE*TARGET_SIZE/this.can.height);
+        
+        const items = this.projector.project(root, offsetX, offsetY, this.can.width / TILE_SIZE / 2 / scale, this.can.height / TILE_SIZE / 2 / scale, displayOffsetX, displayOffsetY);
         this.ctx.fillStyle = 'rgba(0,0,0,1)';
         this.ctx.fillRect(0,0,this.can.width,this.can.height);
         this.ctx.save();
         
 
         this.ctx.translate(this.can.width / 2, this.can.height / 2);
-        this.ctx.translate(displayOffsetX * TILE_SIZE, displayOffsetY * TILE_SIZE)
+        this.ctx.scale(scale,scale);
+        
+        this.ctx.translate( (displayOffsetX * TILE_SIZE), (displayOffsetY * TILE_SIZE));
         
         // this.ctx.scale(TILE_SIZE, TILE_SIZE);
 
@@ -88,8 +93,7 @@ export class Renderer {
                 
             }
             
-            this.ctx.translate(item.x * TILE_SIZE, item.y * TILE_SIZE);
-            this.ctx.translate(-offsetX * TILE_SIZE, -offsetY * TILE_SIZE);
+            this.ctx.translate( ( (item.x -offsetX)* TILE_SIZE) , ((item.y-offsetY) * TILE_SIZE) );
 
             this.applyOrientation(item.view.orientation);
 
