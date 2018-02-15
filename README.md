@@ -1,8 +1,9 @@
 # Topological grid
 
 The premise of this is to make a grid system where the only data stored is what edges connect to what other edges. (As well as reflection data, used at the ends of Möbius stips)
-This allows the creation of Möbius stips, Torus, Klein bottle bottles as well as more exotic layouts such as parallel hallways of differing length and infinitely branching mazes.
+This allows the creation of Möbius stips, Torus, Klein bottles as well as more exotic layouts such as parallel hallways of differing length and infinitely branching mazes.
 
+## [Demo here](https://kyledavide.github.io/TopologicalGrid/)
 
 > todo: GIFs
 
@@ -12,7 +13,7 @@ This allows the creation of Möbius stips, Torus, Klein bottle bottles as well a
 * [ ] Come up with some way of texturing the tiles
 * [ ] Labels for different rooms 
 * [ ] Cleaner methods of exiting / entering the tick-tack-toe areas
-* [ ] Setup github pages
+* [x] Setup github pages
 
 
 # Log term ideas
