@@ -126,11 +126,11 @@ export class Entity{
                     const thisTracker = this.trackingTiles[x][y];
                     
                     this.trackingTilesOld[x][y].copy(thisTracker);
-                    crossingValid = crossingValid && thisTracker.tryCrossEdge(side);
+                    crossingValid = crossingValid && thisTracker.tryCrossEdge(side) && thisTracker.view.tile.walkable;
                 }
             }
             this.centerOld.copy(this.center);
-            crossingValid = crossingValid && this.center.tryCrossEdge(side);
+            crossingValid = crossingValid && this.center.tryCrossEdge(side) && this.center.view.tile.walkable;
            
 
             if(crossingValid){

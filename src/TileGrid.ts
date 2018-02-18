@@ -19,13 +19,14 @@ export class TileGrid {
 
         this.tiles.forEach( (row, y) => {
             row.forEach( (tile, x) => {
-                if(y !== 0){
+                if(!tile) return;
+                if(y !== 0 && this.tiles[y - 1][x]){
                     this.tiles[y - 1][x].link(
                         Side.bottom,
                         tile
                     );
                 }
-                if(x !== 0){
+                if(x !== 0 && row[x - 1]){
                     row[x - 1].link(
                         Side.right,
                         tile

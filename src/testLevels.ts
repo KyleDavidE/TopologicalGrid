@@ -4,6 +4,9 @@ import { Side } from "./Side";
 import { strictCompose } from "./compose";
 import { Tile } from "./Tile";
 import { TickTackToeTile } from "./tickTackToe/TickTackToeTile";
+import { WallTile } from "./WallTile";
+import { autoWall } from "./autoWall";
+import { Player } from "./Player";
 
 function colorTile(xc: number, yc: number, color: string): TileFilter {
     return (next) => (x, y) => {
@@ -572,6 +575,41 @@ export function spiral(S=10){
 }
 
 
+
+export function wheel(S=5){
+    const center = new TileGrid(S,S,[
+        dynamicColor(S,S)
+    ]);
+
+    const root = center.get(0,0);
+    const edgeLength = S + 1;
+    const edge = new TileGrid(edgeLength*4,1,[
+        rain(edgeLength*4,0)
+    ]);
+
+    edge.get(0,0).link(
+        Side.left,
+        edge.get( edgeLength*4-1,0)
+    );
+    
+    let dest = root.getView(Side.bottom);
+    
+    for(let i = 0; i < edgeLength*4; i++){
+        if(i % edgeLength  === 1) continue;
+        edge.get(i,0).getView(0).link(
+            Side.bottom,
+            dest,
+            Side.top
+        );
+        if(i % edgeLength === 0){
+            dest = dest.rotate(Side.top);
+        }else{
+            dest = dest.getNeighbor(Side.right);
+        }
+    }
+    return center.get(S/2 | 0,S/2 | 0);
+}
+
 export function makeHubRoom(worlds: (Tile|Tile[][]|false)[], color = 'gold') {
 
     const root = [new ColorTile('red'), new ColorTile('pink')];
@@ -679,9 +717,10 @@ export function hubRoom() {
         makeHubRoom([
             mobius(),
             mobius(30),
-            spiral()
+            spiral(),
+            wheel()
         ],'blue')
     ]);
-
+    autoWall(data[0][1]);
     return data[0][1];
 }

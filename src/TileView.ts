@@ -1,6 +1,6 @@
 import { Tile } from "./Tile";
 import { DirMtx, dirMtxProduct, dirMtxApply, dirMtxInverse, dirMtxProductImpl } from "./DirMtx";
-import { Side } from "./Side";
+import { Side, reverseSide } from "./Side";
 import { Entity } from "./Entity";
 import { RenderableEntity } from "./RenderableEntity";
 
@@ -38,13 +38,15 @@ export class TileView{
         this.orientation = orientation;
         this.id = `${tile.id},${orientation}`;
     }
-
+    computeSide(i: Side){
+        return dirMtxApply(
+            dirMtxInverse(this.orientation),
+            i
+        );
+    }
     getNeighbor(i: Side){
         const edge = this.tile.getReference(
-            dirMtxApply(
-                dirMtxInverse(this.orientation),
-                i
-            )
+                this.computeSide(i)
             );
         
         if(edge){    
@@ -68,5 +70,29 @@ export class TileView{
     }
     track(entity: RenderableEntity){
         this.tile.track(entity);
+    }
+
+    link(fromSide: Side, toTile: TileView, toSide = reverseSide(fromSide), {
+        reflect = false,
+        addReverse = true
+    } = {}){
+        this.tile.link(
+            this.computeSide(fromSide),
+            toTile.tile,
+            toTile.computeSide(toSide),
+            {
+                reflect: !reflect !== !( (toTile.orientation ^ this.orientation) & 0b100),
+                addReverse
+            }
+        );
+    }
+
+    rotate(mtx: DirMtx){
+        return this.tile.getView(
+            dirMtxProductImpl(
+                mtx,
+                this.orientation
+            )
+        );
     }
 }

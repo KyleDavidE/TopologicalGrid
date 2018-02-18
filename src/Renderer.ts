@@ -1,8 +1,10 @@
 import { Projector } from "./Projector";
 import { TileView } from "./TileView";
-import { DirMtx } from "./DirMtx";
+import { DirMtx, dirMtxApply } from "./DirMtx";
 import { TILE_SIZE } from "./opts";
 import { RenderableEntity } from "./RenderableEntity";
+import { Side } from "./Side";
+
 function maxSquareSquare(z: number) {
     return Math.max(z ** 2, (z + 1) ** 2);
 }
@@ -41,6 +43,10 @@ export class Renderer {
         
         // this.ctx.scale(TILE_SIZE, TILE_SIZE);
 
+        const r = Math.sqrt(
+            maxSquareSquare(this.can.width + offsetX * TILE_SIZE) +
+            maxSquareSquare(this.can.height + offsetY * TILE_SIZE)
+        ) / 2;
 
         for (let item of items) {
             // if (DEBUG) console.log(item);
@@ -62,10 +68,7 @@ export class Renderer {
                     this.ctx.stroke();
                 }
             }
-            const r = Math.sqrt(
-                maxSquareSquare(item.x - offsetX) +
-                maxSquareSquare(item.y - offsetY)
-            ) + Math.sqrt(2);
+            
             if(!item.isRoot && item.anglesLength !== 2){
                 this.ctx.beginPath();
                 
@@ -76,10 +79,10 @@ export class Renderer {
                     if(fromAng === toAng) continue;
                     const sf = Math.abs(1/Math.cos( (fromAng-toAng) / 2));
                     this.ctx.moveTo(0, 0);
-                    this.ctx.lineTo(Math.cos(fromAng) * r * TILE_SIZE * sf, Math.sin(fromAng) * r * TILE_SIZE * sf);
+                    this.ctx.lineTo(Math.cos(fromAng) * r * sf, Math.sin(fromAng) * r * sf);
 
                     // this.ctx.arc(0, 0, r * TILE_SIZE, fromAng, toAng);
-                    this.ctx.lineTo(Math.cos(toAng) * r * TILE_SIZE * sf, Math.sin(toAng) * r * TILE_SIZE * sf);
+                    this.ctx.lineTo(Math.cos(toAng) * r * sf, Math.sin(toAng) * r * sf);
                     
                     this.ctx.lineTo(0, 0);
                 }
@@ -92,16 +95,22 @@ export class Renderer {
                 this.ctx.clip();
                 
             }
-            
-            this.ctx.translate( ( (item.x -offsetX)* TILE_SIZE) , ((item.y-offsetY) * TILE_SIZE) );
+            const translateX = ( (item.x -offsetX)* TILE_SIZE);
+            const translateY = ((item.y-offsetY) * TILE_SIZE);
+            this.ctx.translate( translateX , translateY);
 
             this.applyOrientation(item.view.orientation);
+            const leftOrientation = dirMtxApply(item.view.orientation, Side.left);
+            const topOrientation = dirMtxApply(item.view.orientation, Side.top);
+            
 
             // this.ctx.beginPath();
             // this.ctx.rect(0, 0, 1, 1);
             // this.ctx.clip();
+            const cornerDist = (leftOrientation & 0b1 ? translateY  : translateX);
+            const cornerShear = (topOrientation & 0b1 ? translateY  : translateX);
             
-            item.view.tile.render(this.ctx, t);
+            item.view.tile.render(this.ctx, t,  leftOrientation &0b10 ? cornerDist : (-TILE_SIZE-cornerDist), topOrientation &0b10 ? cornerShear : (-TILE_SIZE-cornerShear));
             if(DEBUG){
                 this.ctx.fillStyle = "black";
                 
