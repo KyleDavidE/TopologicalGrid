@@ -328,7 +328,7 @@ export class Projector {
                 );
             }
         }
-        for (let i = 0; i < item.angles.length / 2; i++) {
+        for (let i = 0; i < item.anglesLength / 2; i++) {
             const fromAng = item.angles[2 * i];
             const toAng = item.angles[2 * i + 1];
             if(fromAng === toAng) continue;
