@@ -58,7 +58,7 @@ export class Tile{
         return this.tileViews[mtx];
     }
 
-    render(ctx: CanvasRenderingContext2D, t: number){
+    render(ctx: CanvasRenderingContext2D, t: number, playerDist: number, playerShear: number){
         this.loadTimer = t;
     }
     isolate(){

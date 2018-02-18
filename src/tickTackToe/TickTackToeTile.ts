@@ -64,9 +64,9 @@ export class TickTackToeTile extends ColorTile{
     occupied = Turn.NONE;
     game: TickTackToeGame = null;
     isWinningLine = false;
-    render(ctx: CanvasRenderingContext2D, t: number){
+    render(ctx: CanvasRenderingContext2D, t: number, playerDist: number, playerShear: number){
 
-        super.render(ctx,t);
+        super.render(ctx,t, playerDist, playerShear);
 
         ctx.fillStyle = turnColor(this.occupied);
 
