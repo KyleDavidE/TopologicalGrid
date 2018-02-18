@@ -27,10 +27,10 @@ export class Renderer {
         this.ctx = can.getContext('2d');
     }
 
-    render(root: TileView, offsetX: number, offsetY: number, t:number, displayOffsetX: number, displayOffsetY: number) {        
+    render(root: TileView, offsetX: number, offsetY: number, t:number, displayOffsetX: number, displayOffsetY: number, warpDest: TileView, warpProg: number ) {        
         const scale = this.scale = 1/Math.max(TILE_SIZE*TARGET_SIZE/this.can.width,TILE_SIZE*TARGET_SIZE/this.can.height);
         
-        const items = this.projector.project(root, offsetX, offsetY, this.can.width / TILE_SIZE / 2 / scale, this.can.height / TILE_SIZE / 2 / scale, displayOffsetX, displayOffsetY);
+        const items = this.projector.project(root, offsetX, offsetY, this.can.width / TILE_SIZE / 2 / scale, this.can.height / TILE_SIZE / 2 / scale, displayOffsetX, displayOffsetY, warpDest, warpProg);
         this.ctx.fillStyle = 'rgba(0,0,0,1)';
         this.ctx.fillRect(0,0,this.can.width,this.can.height);
         this.ctx.save();
@@ -69,7 +69,7 @@ export class Renderer {
                 }
             }
             
-            if(!item.isRoot && item.anglesLength !== 2){
+            if( /* !item.isRoot && */ item.anglesLength !== 2){
                 this.ctx.beginPath();
                 
                 for (let i = 0; i < item.anglesLength; i += 2) {
