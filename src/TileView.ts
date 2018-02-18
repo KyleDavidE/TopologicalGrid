@@ -86,4 +86,13 @@ export class TileView{
             }
         );
     }
+
+    rotate(mtx: DirMtx){
+        return this.tile.getView(
+            dirMtxProductImpl(
+                mtx,
+                this.orientation
+            )
+        );
+    }
 }
