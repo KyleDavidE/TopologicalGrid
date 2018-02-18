@@ -574,30 +574,6 @@ export function spiral(S=10){
 }
 
 
-export function wallTest(W=5,H=5){
-    const grid = new TileGrid(W,H,[
-    //     (next) => (x,y) => {
-            
-    //         if(x === W -1){
-    //             return new WallTile();
-    //         }
-    //         return next(x,y);
-    //    },
-        dynamicColor(W,H)
-        
-    ]);
-
-    
-
-    // autoWall(grid.get(0,0));
-    
-
-    
-
-    return grid.get(0,H-2);
-}
-
-
 export function makeHubRoom(worlds: (Tile|Tile[][]|false)[], color = 'gold') {
 
     const root = [new ColorTile('red'), new ColorTile('pink')];
@@ -679,7 +655,6 @@ export function makeHubRoom(worlds: (Tile|Tile[][]|false)[], color = 'gold') {
 export function hubRoom() {
     const data = makeHubRoom([
         makeHubRoom([
-            wallTest(),
             portSpace(),
             ballPort(),
             mirror(),

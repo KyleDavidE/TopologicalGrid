@@ -11,8 +11,11 @@ export class Tile{
     id = nextId++;
     entities = new Set<RenderableEntity>();
     tileViews: TileView[];
+    walkable = true;
+    propertyDominance: number;
     constructor(){
         this.tileViews = Array(8);
+        this.propertyDominance = Math.random();
         for(let i = 0; i < 8; i++){
             this.tileViews[i] = new TileView(this, i);
         }
@@ -52,8 +55,12 @@ export class Tile{
                 reflect
             });
         }
-    }
 
+        this.onLinked(this.links[fromSide]);
+    }
+    onLinked(side: SideReference){
+
+    }
     getView(mtx: DirMtx){
         return this.tileViews[mtx];
     }

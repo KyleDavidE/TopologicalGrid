@@ -56,6 +56,22 @@ export function autoWall(root: Tile){
     }
     console.timeEnd("wallLink");
     
+
+    for(let wall of wallsToLink){
+        const wallShade = wall.wallShade;
+        
+        for(let dir of [Side.top, Side.bottom]){
+            let view = wall.getView(0).getNeighbor(dir);
+            while(view && view.tile instanceof WallTile && view.tile !== wall){
+                wallsToLink.delete(view.tile);
+                view.tile.wallShade = wallShade;
+
+                view = view.getNeighbor(dir);
+            }
+        }
+        
+    }
+
     console.timeEnd("wall");
     
 
