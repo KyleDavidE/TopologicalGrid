@@ -5,9 +5,6 @@ import { TILE_SIZE } from "./opts";
 import { RenderableEntity } from "./RenderableEntity";
 import { Side } from "./Side";
 
-function maxSquareSquare(z: number) {
-    return Math.max(z ** 2, (z + 1) ** 2);
-}
 const debugColors = ['red', 'green', 'blue', 'cyan', 'orange'];
 function debugColor() {
     return debugColors[(Math.random() * debugColors.length) | 0];
@@ -27,7 +24,7 @@ export class Renderer {
         this.ctx = can.getContext('2d');
     }
 
-    render(root: TileView, offsetX: number, offsetY: number, t:number, displayOffsetX: number, displayOffsetY: number, warpDest: TileView, warpProg: number ) {        
+    render(root: TileView, offsetX: number, offsetY: number, t:number, displayOffsetX: number, displayOffsetY: number, warpDest: TileView, warpProg: number, explode: number = 1) {        
         const scale = this.scale = 1/Math.max(TILE_SIZE*TARGET_SIZE/this.can.width,TILE_SIZE*TARGET_SIZE/this.can.height);
         
         const items = this.projector.project(root, offsetX, offsetY, this.can.width / TILE_SIZE / 2 / scale, this.can.height / TILE_SIZE / 2 / scale, displayOffsetX, displayOffsetY, warpDest, warpProg);
@@ -44,9 +41,9 @@ export class Renderer {
         // this.ctx.scale(TILE_SIZE, TILE_SIZE);
 
         const r = Math.sqrt(
-            maxSquareSquare(this.can.width + offsetX * TILE_SIZE) +
-            maxSquareSquare(this.can.height + offsetY * TILE_SIZE)
-        ) / 2;
+            (this.can.width + TILE_SIZE)**2 +
+            (this.can.height + TILE_SIZE)**2
+        );
 
         for (let item of items) {
             // if (DEBUG) console.log(item);
@@ -95,9 +92,9 @@ export class Renderer {
                 this.ctx.clip();
                 
             }
-            const translateX = ( (item.x -offsetX)* TILE_SIZE);
-            const translateY = ((item.y-offsetY) * TILE_SIZE);
-            this.ctx.translate( translateX , translateY);
+            const translateX = ( (item.x * explode-offsetX)* TILE_SIZE);
+            const translateY = ((item.y * explode-offsetY) * TILE_SIZE);
+            this.ctx.translate( translateX, translateY);
 
             this.applyOrientation(item.view.orientation);
             const leftOrientation = dirMtxApply(item.view.orientation, Side.left);
