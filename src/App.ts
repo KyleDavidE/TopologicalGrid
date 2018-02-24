@@ -44,7 +44,8 @@ export class App {
         w:false,
         a:false,
         s:false,
-        d:false
+        d:false,
+        q:false
     };
     cam: ViewCursor;
     interactLock = false;
@@ -57,6 +58,8 @@ export class App {
         mockPlayer: new Player( level.getView(0), null),
         progress: 0.5
     };
+    explodeLevel = 0
+    explodeVelocity = 0
     constructor() {
         this.can = document.getElementById("can") as HTMLCanvasElement;
         this.renderer = new Renderer(this.can);
@@ -114,7 +117,16 @@ export class App {
         this.cam.copy(ctr);
         const offsetX = 0;
         const offsetY = 0;
-        
+        this.explodeVelocity -= (this.monitorKeys.q ? -1 : 1) * dt / 1000 / 1000 * 5;
+        this.explodeLevel += this.explodeVelocity * dt;
+        if(this.explodeLevel > 0)
+        {
+            // this.explodeVelocity = 
+        }else if(this.explodeLevel < 0){
+            this.explodeVelocity = 0;
+            this.explodeLevel = 0;
+        }
+
         ctr.view.stepOn(t);
         if(!this.cam.move(offsetX, offsetY)){
             console.log("wat");
@@ -127,7 +139,8 @@ export class App {
             offsetX,
             offsetY,
             this.currentWarp ? this.currentWarp.dest : null,
-            this.currentWarp ? this.currentWarp.progress : 0
+            this.currentWarp ? this.currentWarp.progress : 0,
+            2**this.explodeLevel
         );  
         if(this.watNumber !== wat)  console.log('wat');
         this.watNumber = wat;
@@ -167,6 +180,7 @@ export class App {
         if(e.key === "e"){
             this.interactLock = false;
         }
+        
         if(e.key === "h"){
             this.startWarpHome();
             // this.player.respawn(level.getView(0));
@@ -220,6 +234,7 @@ export class App {
     //     return false;
     // }
     killWarp(){
+        if(this.explodeVelocity > -1/100) this.explodeVelocity = -1/100;
         if(this.currentWarp){
             this.currentWarp.progress = 0;
             this.currentWarp.mockPlayer.kill();
