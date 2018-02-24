@@ -18,6 +18,7 @@ function greaterThanEqualsFavorsTrue(a: number,b: number){// faviors true
     return a + FUDGE_THETA >= b;
 }
 const DEBUG = false;
+let tmp = 0;
 const ANGLE_RANGE = Math.PI / 100000;
 class ProjectionPath {
     maxTheta: number;
@@ -39,7 +40,7 @@ class ProjectionPath {
     static id(view: TileView, x: number, y: number) {
         return `${view.id},${x},${y}`;
     }
-    init(view: TileView, x: number, y: number, isRoot = false, offsetX: number, offsetY: number) {
+    init(view: TileView, x: number, y: number, isRoot = false, offsetX: number, offsetY: number, rootAngleMin = 0, rootAngleMax = Math.PI * 2) {
         this.view = view;
         this.x = x;
         this.y = y;
@@ -53,16 +54,31 @@ class ProjectionPath {
             //        0,
             //        Math.PI / 2
             //    );
-            for (let i = 0; i < 3; i++) {
-                this.angles[this.anglesLength++] = (
-                    Math.PI *2/ 3 * (i + .5)
-                );
-
-                this.angles[this.anglesLength++] = (
-                    Math.PI * 2/ 3 * (i + 1.5)
-                );
-
+            if(rootAngleMin === 0 && rootAngleMax === Math.PI * 2){
+                for (let i = 0; i < 3; i++) {
+                    this.angles[this.anglesLength++] = (
+                        Math.PI *2/ 3 * (i + .5)
+                    );
+    
+                    this.angles[this.anglesLength++] = (
+                        Math.PI * 2/ 3 * (i + 1.5)
+                    );
+    
+                }
+            }else{
+                let isOpen = false;
+                for(let ang = rootAngleMin; ang < rootAngleMax; ang+= isOpen ? Math.PI * 2 / 3 : 0){
+                    this.angles[this.anglesLength++] = (
+                        ang
+                    );
+                    isOpen = !isOpen;
+                }
+                if(isOpen){
+                    this.angles[this.anglesLength++] = rootAngleMax;
+                }
+                if(tmp++ < 10) console.log(this.angles,rootAngleMin,rootAngleMax);
             }
+            
         }else{
             let minTheta = Infinity;
             let maxTheta = -Infinity;
@@ -174,7 +190,7 @@ export class Projector {
     que: ProjectionPath[];
     projectionPathPool = new LinearObjectPool<ProjectionPath>(() => new ProjectionPath());
 
-    project(root: TileView, offsetX: number, offsetY: number, renderRadiusX: number, renderRadiusY: number, displayOffsetX: number, displayOffestY: number): IterableIterator<ProjectionPath> {
+    project(root: TileView, offsetX: number, offsetY: number, renderRadiusX: number, renderRadiusY: number, displayOffsetX: number, displayOffestY: number, warpDest: TileView, warpProgress: number): IterableIterator<ProjectionPath> {
         this.projectionPathPool.done();
         this.que = [];
         this.lookup.clear();
@@ -184,22 +200,22 @@ export class Projector {
         this.renderRadiusY = renderRadiusY;
         this.displayOffsetX = displayOffsetX;
         this.displayOffsetY = displayOffestY;
-        const addRoot = (root: TileView, x: number, y: number) => {
+        const addRoot = (root: TileView, x: number, y: number, rootAngleMin: number = 0, rootAngleMax: number = Math.PI * 2) => {
             if (!root) return;
 
             if (x === 0 && y === 0) {
                 if (offsetX <= EDGE_GLITCH_REDUCTION_DIST) {
-                    addRoot(root.getNeighbor(Side.left), -1, y);
+                    addRoot(root.getNeighbor(Side.left), -1, y, rootAngleMin, rootAngleMax);
                 }
                 if (offsetX >= 1 - EDGE_GLITCH_REDUCTION_DIST) {
-                    addRoot(root.getNeighbor(Side.right), 1, y);
+                    addRoot(root.getNeighbor(Side.right), 1, y, rootAngleMin, rootAngleMax);
                 }
             
                 if (offsetY <= EDGE_GLITCH_REDUCTION_DIST) {
-                    addRoot(root.getNeighbor(Side.top), x, -1);
+                    addRoot(root.getNeighbor(Side.top), x, -1, rootAngleMin, rootAngleMax);
                 }
                 if (offsetY >= 1 - EDGE_GLITCH_REDUCTION_DIST) {
-                    addRoot(root.getNeighbor(Side.bottom), x, 1);
+                    addRoot(root.getNeighbor(Side.bottom), x, 1, rootAngleMin, rootAngleMax);
                 }
             }
             const rootPath = this.projectionPathPool.pop().init(
@@ -208,7 +224,9 @@ export class Projector {
                 y,
                 true,
                 offsetX,
-                offsetY
+                offsetY,
+                rootAngleMin,
+                rootAngleMax
             );
             this.lookup.set(
                 rootPath.id,
@@ -218,7 +236,16 @@ export class Projector {
             this.que.push(rootPath);
             
         }
-        addRoot(root, 0, 0);
+        if(warpProgress === 0){
+            addRoot(root, 0, 0);
+            
+        }else{
+            const angAdd = warpProgress * Math.PI;
+            
+            addRoot(root, 0, 0, -Math.PI / 2 + angAdd + 0.1, 3 * Math.PI / 2 - angAdd  + 0.1);
+            addRoot(warpDest, 0, 0, 3 * Math.PI / 2 - angAdd  + 0.1 ,3 * Math.PI / 2 + angAdd  + 0.1);
+            
+        }
 
 
         while (this.que.length > 0) {
@@ -256,7 +283,7 @@ export class Projector {
         if (!nextTile) return;
         if (DEBUG) console.log("consider side", axis, offsetZ, nextTile, nextX, nextY, item.id);
         const lineZ = axis ? item.x + offsetZ - this.offsetX : item.y + offsetZ - this.offsetY;
-
+        
         const topU = axis ? item.y - this.offsetY : item.x - this.offsetX;
         const bottomU = topU + 1;
         function makeAng(u: number) {
@@ -273,6 +300,7 @@ export class Projector {
 
             const slopeUZ = axis ? Math.tan(angle) : Math.tan(Math.PI / 2 - angle);
             const colU = slopeUZ * lineZ;
+            
             if (DEBUG) console.log("proj", angle, slopeUZ, colU);
 
             if ((axis ? Math.cos(angle) : Math.sin(angle)) * lineZ < 0) {
@@ -300,7 +328,7 @@ export class Projector {
             if (newFromAng === false || newToAng === false) {
                 return;
             }
-            if (newFromAng !== newToAng) {
+            if (newFromAng !== newToAng && ! (item.isRoot && (axis ? Math.cos(fromAng) : Math.sin(fromAng)) * lineZ < 0 && (axis ? Math.cos(toAng) : Math.sin(toAng)) * lineZ < 0 )) {
                 if (newItem === null) {
                     const key = ProjectionPath.id(nextTile, nextX, nextY);
                     if (this.lookup.has(key)) {
