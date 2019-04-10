@@ -365,22 +365,22 @@ export function tickTackToeBasic(){
 }
 
 
-export function tickTackToeDonut(){
-    const grid = new TileGrid(3,3, [
-        tickTackToeLayer()
+export function tickTackToeDonut(size = 3, win= 3){
+    const grid = new TileGrid(size,size, [
+        tickTackToeLayer(win)
     ]);
 
     const bridge = new ColorTile("white");
     
 
-    for(let i = 0; i < 3; i++){
+    for(let i = 0; i < size; i++){
         grid.get(0,i).link(
             Side.left,
-            grid.get(2,i)
+            grid.get(size-1,i)
         );
         grid.get(i,0).link(
             Side.top,
-            grid.get(i,2)
+            grid.get(i,size-1)
         );
     }
 
@@ -468,6 +468,42 @@ export function tickTackToeKlign(){
     return bridge;
 }
 
+
+export function tickTackToeRpp(){
+    const grid = new TileGrid(3,3, [
+        tickTackToeLayer(4)
+    ]);
+
+    const bridge = new ColorTile("white");
+    
+
+    for(let i = 0; i < 3; i++){
+        grid.get(0,i).link(
+            Side.left,
+            grid.get(2,2-i),
+            Side.right,
+            {reflect:true}
+        );
+        grid.get(i,0).link(
+            Side.top,
+            grid.get(2-i,2),
+            Side.bottom,
+            {reflect:true}
+        );
+    }
+
+
+    bridge.link(
+        Side.top,
+        grid.get(0,2),
+        Side.bottom,
+        {
+            addReverse:false
+        }
+    );
+
+    return bridge;
+}
 
 
 export function tickTackToeMirror(){
@@ -711,8 +747,9 @@ export function hubRoom() {
             tickTackToeDonut(),
             tickTackToeKlign(),
             tickTackToeMirror(),
-            
-            tickTackToeDonutOffset()
+            tickTackToeDonutOffset(),
+            tickTackToeRpp(),
+            tickTackToeDonut(4,5)
         ],'grey'),
         makeHubRoom([
             mobius(),
